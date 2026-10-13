@@ -150,6 +150,12 @@ export default function RecordedLivesPage() {
             <div className="space-y-4">
               {filteredReplays.map((replay) => {
                 const locked = replay.access === "premium" && !hasPremium;
+                const metadata = [
+                  replay.category,
+                  replay.recordedAt ? formatRecordedAt(replay.recordedAt) : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
                 return (
                   <article
                     key={replay.id}
@@ -179,24 +185,32 @@ export default function RecordedLivesPage() {
                       <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
                         {replay.access === "premium" ? "PREMIUM" : "ACESSO ABERTO"}
                       </span>
-                      <span className="absolute bottom-3 right-3 rounded-md bg-black/65 px-2 py-1 text-xs font-medium text-white">
-                        {replay.durationMin} min
-                      </span>
+                      {replay.durationMin !== undefined && replay.durationMin > 0 ? (
+                        <span className="absolute bottom-3 right-3 rounded-md bg-black/65 px-2 py-1 text-xs font-medium text-white">
+                          {replay.durationMin} min
+                        </span>
+                      ) : null}
                     </button>
                     <div className="p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
-                        {replay.category} · {formatRecordedAt(replay.recordedAt)}
-                      </p>
+                      {metadata ? (
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+                          {metadata}
+                        </p>
+                      ) : null}
                       <h2 className="mt-1 text-lg font-semibold leading-snug">
                         {replay.title}
                       </h2>
-                      <p className="mt-1 text-sm text-neutral-500">
-                        {replay.description}
-                      </p>
+                      {replay.description ? (
+                        <p className="mt-1 text-sm text-neutral-500">
+                          {replay.description}
+                        </p>
+                      ) : null}
                       <div className="mt-3 flex items-center justify-between gap-3">
-                        <span className="text-xs font-medium text-neutral-500">
-                          {replay.trainer}
-                        </span>
+                        {replay.trainer ? (
+                          <span className="text-xs font-medium text-neutral-500">
+                            {replay.trainer}
+                          </span>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => openReplay(replay)}
@@ -305,9 +319,11 @@ export default function RecordedLivesPage() {
                 </p>
               )}
             </div>
-            <p className="p-4 text-sm text-neutral-600">
-              {selectedReplay.description}
-            </p>
+            {selectedReplay.description ? (
+              <p className="p-4 text-sm text-neutral-600">
+                {selectedReplay.description}
+              </p>
+            ) : null}
           </div>
         </div>
       )}

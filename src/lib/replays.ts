@@ -3,11 +3,11 @@ export type ReplayAccess = "free" | "premium";
 export interface LiveReplay {
   id: string;
   title: string;
-  description: string;
-  trainer: string;
-  category: string;
-  durationMin: number;
-  recordedAt: string;
+  description?: string;
+  trainer?: string;
+  category?: string;
+  durationMin?: number;
+  recordedAt?: string;
   access: ReplayAccess;
   /** Link HTTPS para YouTube, Vimeo ou arquivo MP4/WebM/OGG. */
   playbackUrl: string;
@@ -21,12 +21,19 @@ export type ReplaySource =
   | { kind: "link"; src: string };
 
 /**
- * Catálogo inicial vazio: adicione aqui cada gravação publicada.
+ * Adicione aqui cada gravação publicada.
  * O player entende links padrão do YouTube (incluindo não listado), Vimeo e
  * arquivos de vídeo HTTPS. O gate Premium é apenas demonstrativo no GitHub Pages;
  * não use links privados sensíveis sem uma camada de autorização no servidor.
  */
-export const liveReplays: LiveReplay[] = [];
+export const liveReplays: LiveReplay[] = [
+  {
+    id: "vem-pra-bahia",
+    title: "Vem Pra Bahia",
+    access: "free",
+    playbackUrl: "https://youtu.be/XgnuXVzn-qc",
+  },
+];
 
 export function resolveReplaySource(rawUrl: string): ReplaySource | null {
   let url: URL;
