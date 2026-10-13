@@ -172,6 +172,17 @@ export default function FreeLivePage() {
       </div>
 
       <div className="flex flex-1 flex-col rounded-t-3xl bg-neutral-900 px-4 pb-6 pt-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
+            Conversa da live
+          </p>
+          <Link
+            href="/live/replays"
+            className="shrink-0 text-xs font-semibold text-orange-300"
+          >
+            Lives gravadas →
+          </Link>
+        </div>
         <div className="mb-3 flex gap-2">
           <button
             onClick={() => setUpsell(true)}

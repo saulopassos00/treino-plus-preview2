@@ -79,6 +79,24 @@ export default function HomePage() {
         </Link>
       </section>
 
+      <section className="mb-6 px-4">
+        <Link
+          href="/live/replays"
+          className="flex items-center gap-3 rounded-[18px] bg-white px-4 py-3 shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.99]"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+            <IconPlay className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <strong className="block text-sm font-semibold">Lives gravadas</strong>
+            <span className="mt-0.5 block text-xs text-neutral-500">
+              Não conseguiu assistir? Veja no seu ritmo.
+            </span>
+          </span>
+          <IconChevron className="h-4 w-4 shrink-0 text-neutral-400" />
+        </Link>
+      </section>
+
       {/* Continuar */}
       <p className="px-5 pb-3 text-xl font-bold tracking-tight">Continuar</p>
       <div className="-mx-0 mb-6 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none">

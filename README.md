@@ -38,10 +38,17 @@ npm run build && npm start   # produção local
 | `/library` | Biblioteca VOD | 6 treinos compra única (legado do funil) |
 | `/workout/[id]` | Detalhe VOD | Checkout Stripe-shaped / demo |
 | `/live/free` | Sala Free Live | Sem login · join +1 viewer · chat na session · upsells |
+| `/live/replays` | Lives gravadas | Catálogo com acesso aberto/Premium e player para YouTube, Vimeo ou vídeo HTTPS |
 | `/live/premium` | Lobby Premium Live | Gate por assinatura demo |
 | `/account` | Perfil | Auth, streak, protocolo %, ebook, VODs, loja, portal |
 | `/meu-plano` | Meu plano | Criar treinos e exercícios personalizados; adicionar, editar, reordenar e remover itens |
 | `/trainer` | Host panel | Go live (free) mock |
+
+## Catálogo de lives gravadas
+
+Os replays são cadastrados no array `liveReplays` de `src/lib/replays.ts`. Cada item informa título, descrição, treinador, categoria, duração, data, `access` (`"free"` ou `"premium"`) e `playbackUrl`. O player reconhece links padrão do YouTube (inclusive não listado), Vimeo e arquivos HTTPS MP4/WebM/OGG; links HTTPS de outros serviços abrem na plataforma de origem.
+
+O bloqueio Premium é apenas demonstrativo no GitHub Pages: como o app é estático e a assinatura é simulada no navegador, ele não protege links privados contra acesso direto. Para vender ou restringir gravações de verdade, integrar autenticação e uma plataforma que forneça autorização de playback segura (por exemplo, URLs assinadas).
 
 **Bottom nav:** Início · Treinos · Live · Loja · Perfil
 
@@ -94,7 +101,7 @@ This app can be statically exported for project Pages at
 `https://saulopassos00.github.io/treino-plus-preview2/`.
 
 `next.config.mjs` sets `output: 'export'`, `basePath` / `assetPrefix`
-`/treino-plus-preview`, and `images.unoptimized`.
+`/treino-plus-preview2`, and `images.unoptimized`.
 
 **API routes:** Next static export cannot include `src/app/api/**`.
 Server-only Stripe stubs live in `_api_server_only/` (moved out of `src/app`
@@ -106,4 +113,4 @@ and remove or relax `output: 'export'`.
 npm run build   # writes out/
 ```
 
-Deploy: copy `out/` (plus `.nojekyll`) to `rbmny/treino-plus-preview` repo root.
+Deploy: each push to `main` publishes the static files in the root of `saulopassos00/treino-plus-preview2` through GitHub Actions.
