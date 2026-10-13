@@ -5,7 +5,7 @@ import { AppShell } from "@/components/Shell";
 export const metadata: Metadata = {
   title: "Treino Live — Live, treinos e loja",
   description:
-    "Live gratuita, protocolos, Fast Trainer, corrida, ebook, loja e Premium. Demo mobile-first.",
+    "Lives, treinos, nutrição, planejamento de refeições, loja e Premium. Demo mobile-first.",
 };
 
 export const viewport: Viewport = {

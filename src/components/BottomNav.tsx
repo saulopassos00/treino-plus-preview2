@@ -7,6 +7,7 @@ import {
   IconLive,
   IconUser,
   IconDumbbell,
+  IconNutrition,
   IconBag,
 } from "./Icons";
 
@@ -15,6 +16,7 @@ const items = [
   { href: "/treinos", label: "Treinos", icon: IconDumbbell },
   { href: "/meu-plano", label: "Meu plano", icon: IconDumbbell },
   { href: "/live/free", label: "Live", icon: IconLive },
+  { href: "/nutricao", label: "Nutrição", icon: IconNutrition },
   { href: "/loja", label: "Loja", icon: IconBag },
   { href: "/account", label: "Perfil", icon: IconUser },
 ];

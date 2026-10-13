@@ -164,6 +164,15 @@ export function IconBag({ className = "w-6 h-6" }: IconProps) {
   );
 }
 
+export function IconNutrition({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 4c-8.3 0-14 3.2-14 9a7 7 0 0 0 7 7c5.8 0 7-7.7 7-16Z" />
+      <path d="M4 20c3-4.5 6.7-7.6 11-10" />
+    </svg>
+  );
+}
+
 export function IconRun({ className = "w-6 h-6" }: IconProps) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
