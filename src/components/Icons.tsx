@@ -155,6 +155,15 @@ export function IconDumbbell({ className = "w-6 h-6" }: IconProps) {
   );
 }
 
+export function IconPlan({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5.5" y="4" width="13" height="17" rx="2" />
+      <path d="m7.5 9 .8.8 1.4-1.6M11.5 9h5M7.5 13l.8.8 1.4-1.6M11.5 13h5M7.5 17l.8.8 1.4-1.6M11.5 17h5" />
+    </svg>
+  );
+}
+
 export function IconBag({ className = "w-6 h-6" }: IconProps) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
