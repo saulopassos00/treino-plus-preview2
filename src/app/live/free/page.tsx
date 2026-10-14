@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { freeLive } from "@/lib/data";
 import { LiveBadge } from "@/components/LiveBadge";
 import { UpsellSheet } from "@/components/UpsellSheet";
 import { SubscribeModal } from "@/components/SubscribeModal";
-import { IconClose } from "@/components/Icons";
+import { IconClose, IconExpand, IconMinimize } from "@/components/Icons";
 import type { ChatMessage } from "@/types";
 
 const MOCK_CHAT: ChatMessage[] = [
@@ -59,6 +59,8 @@ export default function FreeLivePage() {
   const [subscribe, setSubscribe] = useState(false);
   const [msg, setMsg] = useState("");
   const [joined, setJoined] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const liveStageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const existing = loadChat();
@@ -118,6 +120,59 @@ export default function FreeLivePage() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const syncFullscreen = () => {
+      setIsFullscreen(document.fullscreenElement === liveStageRef.current);
+    };
+    const closeFallbackFullscreen = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    window.addEventListener("keydown", closeFallbackFullscreen);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreen);
+      window.removeEventListener("keydown", closeFallbackFullscreen);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen || document.fullscreenElement) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
+
+  async function toggleFullscreen() {
+    const stage = liveStageRef.current;
+    if (!stage) return;
+
+    if (isFullscreen) {
+      setIsFullscreen(false);
+      if (document.fullscreenElement === stage) {
+        try {
+          await document.exitFullscreen();
+        } catch {
+          /* The CSS fallback can still close the expanded view. */
+        }
+      }
+      return;
+    }
+
+    setIsFullscreen(true);
+    if (typeof stage.requestFullscreen === "function") {
+      try {
+        await stage.requestFullscreen();
+      } catch {
+        /* Keep the in-app fullscreen fallback if native fullscreen is unavailable. */
+      }
+    }
+  }
+
   function sendChat(e: React.FormEvent) {
     e.preventDefault();
     if (!msg.trim()) return;
@@ -130,9 +185,14 @@ export default function FreeLivePage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col bg-neutral-950 text-white">
+    <div className="relative flex min-h-[calc(100dvh-6rem)] flex-col bg-neutral-950 text-white">
       <div
-        className={`relative aspect-[9/14] max-h-[58dvh] w-full bg-gradient-to-br ${freeLive.gradient}`}
+        ref={liveStageRef}
+        className={`relative w-full bg-gradient-to-br ${freeLive.gradient} ${
+          isFullscreen
+            ? "fixed inset-0 z-[60] aspect-auto h-[100dvh] max-h-none w-screen overflow-hidden"
+            : "aspect-[9/14] max-h-[58dvh]"
+        }`}
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(255,255,255,0.25),transparent_50%)]" />
         <svg
@@ -154,8 +214,23 @@ export default function FreeLivePage() {
             </Link>
             <LiveBadge />
           </div>
-          <div className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-medium backdrop-blur">
-            {viewers.toLocaleString("pt-BR")} assistindo
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-medium backdrop-blur">
+              {viewers.toLocaleString("pt-BR")} assistindo
+            </div>
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? "Sair da tela cheia" : "Expandir live para tela cheia"}
+              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-black/35 px-3 py-1.5 text-[10px] font-semibold backdrop-blur transition hover:bg-black/50"
+            >
+              {isFullscreen ? (
+                <IconMinimize className="h-4 w-4" />
+              ) : (
+                <IconExpand className="h-4 w-4" />
+              )}
+              <span>{isFullscreen ? "Voltar" : "Tela cheia"}</span>
+            </button>
           </div>
         </div>
 

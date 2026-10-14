@@ -73,8 +73,7 @@ const items = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const hide =
-    pathname?.startsWith("/live/free") || pathname?.startsWith("/trainer");
+  const hide = pathname?.startsWith("/trainer");
 
   if (hide) return null;
 

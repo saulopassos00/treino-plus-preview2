@@ -59,6 +59,22 @@ export function IconClose({ className = "w-5 h-5" }: IconProps) {
   );
 }
 
+export function IconExpand({ className = "w-5 h-5" }: IconProps) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3" />
+    </svg>
+  );
+}
+
+export function IconMinimize({ className = "w-5 h-5" }: IconProps) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 3v6H3M21 9h-6V3M3 15h6v6M15 21v-6h6" />
+    </svg>
+  );
+}
+
 export function IconCheck({ className = "w-5 h-5" }: IconProps) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
