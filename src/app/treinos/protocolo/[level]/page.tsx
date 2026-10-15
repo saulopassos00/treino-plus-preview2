@@ -13,10 +13,17 @@ export default function ProtocoloPage() {
   const params = useParams();
   const level = (params.level === "avancado" ? "avancado" : "inter") as ProtocolLevel;
   const isInter = level === "inter";
-  const { protocolProgress, startProtocol, bumpProtocol } = useDemoStore();
+  const {
+    protocolProgress,
+    protocolStarted,
+    startProtocol,
+    bumpProtocol,
+    toggleProtocolInPlan,
+  } = useDemoStore();
   const mounted = useHasMounted();
   const { toast } = useToast();
   const pct = mounted ? protocolProgress[level] : 0;
+  const inMyPlan = mounted && protocolStarted[level];
 
   const sessions = isInter ? PROTO_INTER_SESSIONS : PROTO_ADV_BLOCKS;
 
@@ -27,6 +34,16 @@ export default function ProtocoloPage() {
       isInter
         ? `Protocolo Intermediário · ${Math.min(100, (pct || 0) + (pct <= 0 ? 8 : 12))}%`
         : `Protocolo Avançado · progresso atualizado`
+    );
+  }
+
+  function togglePlan() {
+    const inPlan = toggleProtocolInPlan(level);
+    const name = isInter ? "Intermediário" : "Avançado";
+    toast(
+      inPlan
+        ? `${name} adicionado ao Meu plano`
+        : `${name} removido do Meu plano. Seu progresso foi preservado.`
     );
   }
 
@@ -133,6 +150,16 @@ export default function ProtocoloPage() {
             : pct > 0
               ? "Continuar protocolo"
               : "Começar protocolo"}
+        </button>
+        <button
+          type="button"
+          onClick={togglePlan}
+          disabled={!mounted}
+          className={`w-full rounded-2xl py-3 text-center text-sm font-semibold disabled:opacity-50 ${
+            inMyPlan ? "bg-neutral-100 text-neutral-700" : "bg-blue-50 text-[#007AFF]"
+          }`}
+        >
+          {inMyPlan ? "Remover do Meu plano" : "Adicionar ao Meu plano"}
         </button>
         <button
           onClick={() => toast(isInter ? "PDF do protocolo baixado (demo)" : "Ver Intermediário")}

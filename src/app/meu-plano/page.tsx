@@ -1,8 +1,35 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import type { Exercise, WorkoutItem } from "@/types";
+import Link from "next/link";
+import type { Exercise, ProtocolLevel, WorkoutItem } from "@/types";
 import { useDemoStore, useHasMounted } from "@/lib/store";
+
+const PROTOCOLS: {
+  level: ProtocolLevel;
+  title: string;
+  detail: string;
+  href: string;
+  badge: string;
+  progress: string;
+}[] = [
+  {
+    level: "inter",
+    title: "Intermediário",
+    detail: "Nível 2 · 8 semanas",
+    href: "/treinos/protocolo/inter",
+    badge: "bg-sky-50 text-sky-700",
+    progress: "bg-sky-500",
+  },
+  {
+    level: "avancado",
+    title: "Avançado",
+    detail: "Nível 3 · 12 semanas",
+    href: "/treinos/protocolo/avancado",
+    badge: "bg-violet-50 text-violet-700",
+    progress: "bg-violet-500",
+  },
+];
 
 const CATALOG: Exercise[] = [
   { id: "catalog-agachamento", name: "Agachamento", muscleGroup: "Pernas e glúteos", equipment: "Peso corporal ou barra", level: "Iniciante", isCustom: false, createdAt: "", updatedAt: "" },
@@ -22,6 +49,9 @@ export default function MeuPlanoPage() {
   const {
     customExercises,
     customWorkouts,
+    protocolProgress,
+    protocolStarted,
+    toggleProtocolInPlan,
     createCustomExercise,
     updateCustomExercise,
     deleteCustomExercise,
@@ -118,6 +148,77 @@ export default function MeuPlanoPage() {
           {showWorkoutForm ? "Fechar" : "+ Criar treino"}
         </button>
       </section>
+
+      {mounted && (
+        <section className="mb-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Meus protocolos</h2>
+              <p className="mt-0.5 text-xs text-neutral-500">
+                {PROTOCOLS.filter((protocol) => protocolStarted[protocol.level]).length} no seu plano
+              </p>
+            </div>
+            <Link href="/treinos" className="text-xs font-semibold text-[#007AFF]">
+              Explorar
+            </Link>
+          </div>
+
+          {PROTOCOLS.some((protocol) => protocolStarted[protocol.level]) ? (
+            <ul className="space-y-2">
+              {PROTOCOLS.filter((protocol) => protocolStarted[protocol.level]).map((protocol) => {
+                const progress = protocolProgress[protocol.level] || 0;
+                return (
+                  <li key={protocol.level} className="rounded-2xl border border-neutral-100 p-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`shrink-0 rounded-xl px-2.5 py-2 text-[11px] font-bold ${protocol.badge}`}>
+                        {protocol.level === "inter" ? "N2" : "N3"}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <Link href={protocol.href} className="block truncate text-sm font-semibold">
+                          {protocol.title}
+                        </Link>
+                        <p className="text-xs text-neutral-500">
+                          {protocol.detail} · {progress > 0 ? `${progress}% concluído` : "pronto para começar"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleProtocolInPlan(protocol.level)}
+                        aria-label={`Remover protocolo ${protocol.title} do Meu plano`}
+                        className="shrink-0 rounded-lg px-2 py-1.5 text-xs font-semibold text-red-600"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                    {progress > 0 && (
+                      <div
+                        className="mt-3 h-1.5 overflow-hidden rounded-full bg-neutral-100"
+                        role="progressbar"
+                        aria-label={`Progresso do protocolo ${protocol.title}`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={progress}
+                      >
+                        <div className={`h-full rounded-full transition-all ${protocol.progress}`} style={{ width: `${progress}%` }} />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="rounded-2xl bg-neutral-50 p-4 text-center">
+              <p className="text-sm font-medium">Nenhum protocolo adicionado ainda.</p>
+              <p className="mt-1 text-xs text-neutral-500">
+                Escolha um protocolo e ele aparecerá aqui para você acompanhar e gerenciar.
+              </p>
+              <Link href="/treinos" className="mt-3 inline-flex rounded-xl bg-[#007AFF] px-4 py-2.5 text-xs font-semibold text-white">
+                Escolher protocolo
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
 
       {showWorkoutForm && (
         <form onSubmit={handleCreateWorkout} className="mb-5 space-y-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">

@@ -6,9 +6,12 @@ import { BodySilhouette, SilhouetteCollage } from "@/components/BodySilhouette";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 
 export default function TreinosHubPage() {
-  const { protocolProgress } = useDemoStore();
+  const { protocolProgress, protocolStarted } = useDemoStore();
   const mounted = useHasMounted();
   const interPct = mounted ? protocolProgress.inter : 0;
+  const advancedPct = mounted ? protocolProgress.avancado : 0;
+  const interInPlan = mounted && protocolStarted.inter;
+  const advancedInPlan = mounted && protocolStarted.avancado;
 
   return (
     <main className="pb-4 pt-2">
@@ -55,7 +58,11 @@ export default function TreinosHubPage() {
             Nível 2
           </span>
           <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-white/70">
-            {interPct > 0 ? `Seu plano · ${interPct}%` : "Seu plano atual"}
+            {interInPlan
+              ? interPct > 0
+                ? `No seu plano · ${interPct}%`
+                : "No seu plano"
+              : "Disponível para adicionar"}
           </p>
           <h3 className="text-[22px] font-bold">Intermediário</h3>
           <div className="absolute bottom-2 right-2 opacity-90">
@@ -81,7 +88,11 @@ export default function TreinosHubPage() {
             Nível 3
           </span>
           <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-white/70">
-            Próximo nível
+            {advancedInPlan
+              ? advancedPct > 0
+                ? `No seu plano · ${advancedPct}%`
+                : "No seu plano"
+              : "Disponível para adicionar"}
           </p>
           <h3 className="text-[22px] font-bold">Avançado</h3>
           <div className="absolute bottom-2 right-2 opacity-90">

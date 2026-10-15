@@ -42,8 +42,10 @@ function migrate(raw: Partial<DemoStore>): DemoStore {
       ...(raw.protocolProgress || {}),
     },
     protocolStarted: {
-      ...defaultStore.protocolStarted,
-      ...(raw.protocolStarted || {}),
+      inter:
+        raw.protocolStarted?.inter ?? (raw.protocolProgress?.inter ?? 0) > 0,
+      avancado:
+        raw.protocolStarted?.avancado ?? (raw.protocolProgress?.avancado ?? 0) > 0,
     },
     ownedWorkoutIds: Array.isArray(raw.ownedWorkoutIds) ? raw.ownedWorkoutIds : [],
     ownedShopIds: Array.isArray(raw.ownedShopIds) ? raw.ownedShopIds : [],
@@ -209,6 +211,16 @@ export function useDemoStore() {
       protocolProgress: { ...cur.protocolProgress, [level]: next },
       ...bumpStreak(cur),
     });
+  }, []);
+
+  const toggleProtocolInPlan = useCallback((level: ProtocolLevel): boolean => {
+    const cur = getSnapshot();
+    const inPlan = !cur.protocolStarted[level];
+    writeStore({
+      ...cur,
+      protocolStarted: { ...cur.protocolStarted, [level]: inPlan },
+    });
+    return inPlan;
   }, []);
 
   const toggleCorridaDay = useCallback((key: string) => {
@@ -490,6 +502,7 @@ export function useDemoStore() {
     cancelPremium,
     startProtocol,
     bumpProtocol,
+    toggleProtocolInPlan,
     toggleCorridaDay,
     activateCorrida,
     markEbookChapter,
