@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fadaptacoes\u002F[id]","\u002Fcorrida\u002F[program]","\u002Ftreinos\u002Fcorpo\u002F[part]","\u002Ftreinos\u002Fprotocolo\u002F[level]","\u002Fworkout\u002F[id]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()

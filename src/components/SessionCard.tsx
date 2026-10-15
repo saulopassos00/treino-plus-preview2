@@ -20,12 +20,9 @@ export function SessionCard({
   done?: boolean;
 }) {
   const meta = BODY_META[part];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="mb-2 flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-    >
+  const className = "mb-2 flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-black/[0.04]";
+  const content = (
+    <>
       <div
         className={`tone-${meta.tone} flex h-16 w-14 shrink-0 items-center justify-center rounded-xl p-1`}
       >
@@ -33,9 +30,7 @@ export function SessionCard({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <strong className="text-[15px] font-semibold leading-tight">
-            {title}
-          </strong>
+          <strong className="text-[15px] font-semibold leading-tight">{title}</strong>
           {tag ? (
             <span className="rounded-full bg-[#007AFF]/12 px-2 py-0.5 text-[11px] font-semibold text-[#007AFF]">
               {tag}
@@ -49,7 +44,15 @@ export function SessionCard({
         </div>
         <span className="mt-0.5 block text-xs text-neutral-500">{caption}</span>
       </div>
+    </>
+  );
+
+  return onClick ? (
+    <button type="button" onClick={onClick} className={`${className} transition active:opacity-90`}>
+      {content}
     </button>
+  ) : (
+    <div className={className}>{content}</div>
   );
 }
 
@@ -86,9 +89,7 @@ export function WorkoutRow({
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <strong className="block text-[15px] font-semibold leading-tight">
-          {title}
-        </strong>
+        <strong className="block text-[15px] font-semibold leading-tight">{title}</strong>
         <span className="mt-0.5 block text-xs text-neutral-500">{caption}</span>
       </div>
     </button>

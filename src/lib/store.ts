@@ -22,6 +22,7 @@ const defaultStore: DemoStore = {
   premiumRenewsAt: null,
   protocolProgress: { inter: 0, avancado: 0 },
   protocolStarted: { inter: false, avancado: false },
+  protocolRemovedSessions: { inter: [], avancado: [] },
   corridaDone: [],
   corridaActive: null,
   ebookChaptersRead: [],
@@ -46,6 +47,14 @@ function migrate(raw: Partial<DemoStore>): DemoStore {
         raw.protocolStarted?.inter ?? (raw.protocolProgress?.inter ?? 0) > 0,
       avancado:
         raw.protocolStarted?.avancado ?? (raw.protocolProgress?.avancado ?? 0) > 0,
+    },
+    protocolRemovedSessions: {
+      inter: Array.isArray(raw.protocolRemovedSessions?.inter)
+        ? raw.protocolRemovedSessions.inter
+        : [],
+      avancado: Array.isArray(raw.protocolRemovedSessions?.avancado)
+        ? raw.protocolRemovedSessions.avancado
+        : [],
     },
     ownedWorkoutIds: Array.isArray(raw.ownedWorkoutIds) ? raw.ownedWorkoutIds : [],
     ownedShopIds: Array.isArray(raw.ownedShopIds) ? raw.ownedShopIds : [],
@@ -192,13 +201,9 @@ export function useDemoStore() {
 
   const startProtocol = useCallback((level: ProtocolLevel) => {
     const cur = getSnapshot();
-    const progress = { ...cur.protocolProgress };
-    if (progress[level] <= 0) progress[level] = 8;
     writeStore({
       ...cur,
       protocolStarted: { ...cur.protocolStarted, [level]: true },
-      protocolProgress: progress,
-      ...bumpStreak(cur),
     });
   }, []);
 
@@ -221,6 +226,39 @@ export function useDemoStore() {
       protocolStarted: { ...cur.protocolStarted, [level]: inPlan },
     });
     return inPlan;
+  }, []);
+
+  const removeProtocolSession = useCallback((level: ProtocolLevel, title: string) => {
+    const cur = getSnapshot();
+    const current = cur.protocolRemovedSessions[level];
+    if (current.includes(title)) return;
+    writeStore({
+      ...cur,
+      protocolRemovedSessions: {
+        ...cur.protocolRemovedSessions,
+        [level]: [...current, title],
+      },
+    });
+  }, []);
+
+  const restoreProtocolSessions = useCallback((level: ProtocolLevel) => {
+    const cur = getSnapshot();
+    if (cur.protocolRemovedSessions[level].length === 0) return;
+    writeStore({
+      ...cur,
+      protocolRemovedSessions: {
+        ...cur.protocolRemovedSessions,
+        [level]: [],
+      },
+    });
+  }, []);
+
+  const resetProtocolProgress = useCallback((level: ProtocolLevel) => {
+    const cur = getSnapshot();
+    writeStore({
+      ...cur,
+      protocolProgress: { ...cur.protocolProgress, [level]: 0 },
+    });
   }, []);
 
   const toggleCorridaDay = useCallback((key: string) => {
@@ -502,6 +540,9 @@ export function useDemoStore() {
     cancelPremium,
     startProtocol,
     bumpProtocol,
+    removeProtocolSession,
+    restoreProtocolSessions,
+    resetProtocolProgress,
     toggleProtocolInPlan,
     toggleCorridaDay,
     activateCorrida,

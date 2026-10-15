@@ -99,6 +99,8 @@ export interface DemoStore {
   /** 0–100 */
   protocolProgress: Record<ProtocolLevel, number>;
   protocolStarted: Record<ProtocolLevel, boolean>;
+  /** Títulos de sessões removidas pelo usuário em cada protocolo. */
+  protocolRemovedSessions: Record<ProtocolLevel, string[]>;
   /** day keys like "5k:w1:d1" */
   corridaDone: string[];
   corridaActive: RunProgramId | null;
