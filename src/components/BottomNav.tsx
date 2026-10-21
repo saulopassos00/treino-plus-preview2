@@ -78,7 +78,7 @@ export function BottomNav() {
   if (hide) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-white/90 backdrop-blur-xl">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-white/95 backdrop-blur-xl sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-full sm:max-w-[430px] sm:rounded-t-2xl sm:shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
       <div className="mx-auto flex max-w-md items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-1">
         {items.map(({ href, label, icon: Icon, color, activeBg, indicator }) => {
           const active =

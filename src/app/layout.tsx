@@ -6,12 +6,23 @@ export const metadata: Metadata = {
   title: "Treino Live — Live, treinos e loja",
   description:
     "Lives, treinos, nutrição, planejamento de refeições, loja e Premium. Demo mobile-first.",
+  manifest: "/treino-plus-preview2/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Treino Live",
+  },
+  icons: {
+    icon: "/treino-plus-preview2/icons/icon-192.svg",
+    apple: "/treino-plus-preview2/icons/icon-192.svg",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
   themeColor: "#f5f5f7",
 };
 

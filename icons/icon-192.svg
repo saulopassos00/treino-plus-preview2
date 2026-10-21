@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF512F" />
+      <stop offset="100%" stop-color="#DD2476" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="192" height="192" rx="42" fill="url(#bgGrad)" />
+  <rect width="192" height="192" rx="42" fill="url(#glowGrad)" />
+
+  <!-- Athlete / Pulse Lightning Icon -->
+  <g fill="#FFFFFF">
+    <circle cx="96" cy="48" r="16" />
+    <path d="M78 72 h36 c6.6 0 12 5.4 12 12 v24 c0 4.4-3.6 8-8 8 h-8 v38 c0 5.5-4.5 10-10 10 s-10-4.5-10-10 v-34 h-4 v34 c0 5.5-4.5 10-10 10 s-10-4.5-10-10 v-38 h-8 c-4.4 0-8-3.6-8-8 V84 c0-6.6 5.4-12 12-12 z" opacity="0.95" />
+    <!-- Pulse badge accent -->
+    <path d="M44 100 L68 100 L76 80 L88 120 L96 95 L104 108 L112 100 L148 100" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" />
+  </g>
+</svg>

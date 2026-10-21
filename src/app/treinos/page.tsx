@@ -26,11 +26,11 @@ export default function TreinosHubPage() {
         href="/treinos/fast"
         className="relative mx-4 mt-5 block overflow-hidden rounded-[18px] bg-gradient-to-br from-[#1C1C1E] to-[#3A3A3C] p-5 text-white shadow-sm transition active:scale-[0.99]"
       >
-        <div className="kicker text-xs font-semibold uppercase tracking-wider text-white/60">
+        <div className="kicker text-xs font-semibold uppercase tracking-wider text-white/80">
           Sessão rápida
         </div>
         <h3 className="mt-1 text-2xl font-bold">Fast Trainer</h3>
-        <p className="mt-1 text-sm text-white/70">Quicky · 15 min · sem equipamento</p>
+        <p className="mt-1 text-sm text-white/90">Quicky · 15 min · sem equipamento</p>
         <svg className="absolute right-4 top-4 h-16 w-16" viewBox="0 0 64 64" aria-hidden="true">
           <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
           <circle
@@ -57,7 +57,7 @@ export default function TreinosHubPage() {
           <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">
             Nível 2
           </span>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-white/70">
+          <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-white/90">
             {interInPlan
               ? interPct > 0
                 ? `No seu plano · ${interPct}%`

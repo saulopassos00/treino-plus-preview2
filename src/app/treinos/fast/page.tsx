@@ -7,6 +7,13 @@ import { TimerRing } from "@/components/Illustrations";
 import { FAST_EXERCISES } from "@/lib/content";
 import { useDemoStore } from "@/lib/store";
 import { useToast } from "@/components/Toast";
+import {
+  playCountdownBeep,
+  playRestTone,
+  playStartTone,
+  playVictoryFanfare,
+} from "@/lib/sound";
+import { requestScreenWakeLock } from "@/lib/wakelock";
 
 type Phase = "idle" | "work" | "rest" | "done";
 
@@ -18,19 +25,38 @@ export default function FastTrainerPage() {
   const [round, setRound] = useState(1);
   const [secsLeft, setSecsLeft] = useState(0);
   const [totalSecs, setTotalSecs] = useState(40);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const phaseRef = useRef(phase);
   const exRef = useRef(exIndex);
   const roundRef = useRef(round);
+  const soundRef = useRef(soundEnabled);
   phaseRef.current = phase;
   exRef.current = exIndex;
   roundRef.current = round;
+  soundRef.current = soundEnabled;
+
+  // Manter a tela ligada durante o treino ativo
+  useEffect(() => {
+    if (phase === "work" || phase === "rest") {
+      const releaseLock = requestScreenWakeLock();
+      return () => releaseLock();
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "work" && phase !== "rest") return;
     const id = setInterval(() => {
       setSecsLeft((s) => {
-        if (s > 1) return s - 1;
+        if (s > 1) {
+          const nextSec = s - 1;
+          // Alerta sonoro nos últimos 3 segundos (3, 2, 1)
+          if (nextSec <= 3 && soundRef.current) {
+            playCountdownBeep(700 + (3 - nextSec) * 70);
+          }
+          return nextSec;
+        }
+
         // tick hits 0 → advance
         const p = phaseRef.current;
         const ei = exRef.current;
@@ -40,6 +66,7 @@ export default function FastTrainerPage() {
         if (p === "work") {
           setPhase("rest");
           setTotalSecs(ex.restSec);
+          if (soundRef.current) playRestTone();
           return ex.restSec;
         }
 
@@ -49,6 +76,7 @@ export default function FastTrainerPage() {
           setExIndex(next);
           setPhase("work");
           setTotalSecs(FAST_EXERCISES[next].workSec);
+          if (soundRef.current) playStartTone();
           return FAST_EXERCISES[next].workSec;
         }
         if (r < 4) {
@@ -56,11 +84,13 @@ export default function FastTrainerPage() {
           setExIndex(0);
           setPhase("work");
           setTotalSecs(FAST_EXERCISES[0].workSec);
+          if (soundRef.current) playStartTone();
           toast(`Round ${r + 1} de 4`);
           return FAST_EXERCISES[0].workSec;
         }
         setPhase("done");
         completeFastWorkout();
+        if (soundRef.current) playVictoryFanfare();
         toast("Treino completo! Streak atualizado 🔥");
         return 0;
       });
@@ -74,6 +104,7 @@ export default function FastTrainerPage() {
     setPhase("work");
     setSecsLeft(FAST_EXERCISES[0].workSec);
     setTotalSecs(FAST_EXERCISES[0].workSec);
+    if (soundEnabled) playStartTone();
     toast("Timer iniciado");
   }
 
@@ -100,9 +131,9 @@ export default function FastTrainerPage() {
       <button
         type="button"
         onClick={phase === "idle" || phase === "done" ? start : undefined}
-        className="relative mx-4 mt-2 block w-[calc(100%-2rem)] overflow-hidden rounded-[22px] bg-gradient-to-br from-[#1C1C1E] to-[#2C2C2E] p-6 text-left text-white"
+        className="relative mx-4 mt-2 block w-[calc(100%-2rem)] overflow-hidden rounded-[22px] bg-gradient-to-br from-[#1C1C1E] to-[#2C2C2E] p-6 text-left text-white shadow-lg transition active:scale-[0.99]"
       >
-        <div className="text-xs font-semibold uppercase tracking-wider text-white/55">
+        <div className="text-xs font-semibold uppercase tracking-wider text-white/80">
           {phase === "work"
             ? `Round ${round}/4 · Trabalho`
             : phase === "rest"
@@ -114,7 +145,7 @@ export default function FastTrainerPage() {
         <h2 className="mt-1 text-3xl font-bold">
           {phase === "idle" || phase === "done" ? "Quicky" : current.t}
         </h2>
-        <p className="mt-1 text-sm text-white/65">
+        <p className="mt-1 text-sm font-medium text-white/80">
           {phase === "idle"
             ? "Circuito HIIT · 4 rounds · sem equipamento"
             : phase === "done"
@@ -128,16 +159,35 @@ export default function FastTrainerPage() {
         </div>
       </button>
 
-      <div className="mx-4 mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[#007AFF]/12 px-2.5 py-1 text-xs font-semibold text-[#007AFF]">
-          40s / 20s
-        </span>
-        <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium">
-          4 rounds
-        </span>
-        <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium">
-          Bodyweight
-        </span>
+      <div className="mx-4 mt-3 flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full bg-[#007AFF]/12 px-2.5 py-1 text-xs font-semibold text-[#007AFF]">
+            40s / 20s
+          </span>
+          <span className="rounded-full bg-neutral-200/70 px-2.5 py-1 text-xs font-medium text-neutral-800">
+            4 rounds
+          </span>
+          <span className="rounded-full bg-neutral-200/70 px-2.5 py-1 text-xs font-medium text-neutral-800">
+            Bodyweight
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const next = !soundEnabled;
+            setSoundEnabled(next);
+            toast(next ? "Som ativado 🔊" : "Som silenciado 🔇");
+          }}
+          aria-label={soundEnabled ? "Silenciar áudio do timer" : "Ativar áudio do timer"}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+            soundEnabled
+              ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+              : "bg-neutral-200 text-neutral-500 hover:bg-neutral-300"
+          }`}
+        >
+          <span>{soundEnabled ? "🔊 Som ligado" : "🔇 Mudo"}</span>
+        </button>
       </div>
 
       <p className="px-5 pb-3 pt-5 text-xl font-bold">Exercícios</p>

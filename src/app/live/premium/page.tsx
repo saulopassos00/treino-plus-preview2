@@ -8,6 +8,7 @@ import { useDemoStore, useHasMounted } from "@/lib/store";
 import { LiveBadge } from "@/components/LiveBadge";
 import { SubscribeModal } from "@/components/SubscribeModal";
 import { IconLock, IconPlay } from "@/components/Icons";
+import { requestScreenWakeLock } from "@/lib/wakelock";
 
 function PremiumLiveInner() {
   const { premiumSubscribed, subscribePremium } = useDemoStore();
@@ -24,6 +25,13 @@ function PremiumLiveInner() {
     if (!premiumSubscribed) subscribePremium();
     router.replace("/live/premium", { scroll: false });
   }, [mounted, search, premiumSubscribed, subscribePremium, router]);
+
+  useEffect(() => {
+    if (inRoom && !locked) {
+      const releaseLock = requestScreenWakeLock();
+      return () => releaseLock();
+    }
+  }, [inRoom, locked]);
 
   if (inRoom && !locked) {
     return (

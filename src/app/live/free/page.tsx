@@ -8,6 +8,7 @@ import { UpsellSheet } from "@/components/UpsellSheet";
 import { SubscribeModal } from "@/components/SubscribeModal";
 import { IconClose, IconExpand, IconMinimize } from "@/components/Icons";
 import type { ChatMessage } from "@/types";
+import { requestScreenWakeLock } from "@/lib/wakelock";
 
 const MOCK_CHAT: ChatMessage[] = [
   { user: "Ana", text: "Primeira vez aqui! 💪" },
@@ -61,6 +62,12 @@ export default function FreeLivePage() {
   const [joined, setJoined] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const liveStageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Mantém a tela ligada durante a sessão ao vivo
+    const releaseLock = requestScreenWakeLock();
+    return () => releaseLock();
+  }, []);
 
   useEffect(() => {
     const existing = loadChat();
