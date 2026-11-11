@@ -1,4 +1,4 @@
-import type { AdaptId, BodyPartId } from "@/types";
+import type { AdaptId, BodyPartId, ProtocolSession } from "@/types";
 
 export const BODY_ORDER: BodyPartId[] = [
   "peito",
@@ -87,41 +87,47 @@ export const BODY_WORKOUTS: Record<
   ],
 };
 
-export const PROTO_INTER_SESSIONS = [
+export const PROTO_INTER_SESSIONS: ProtocolSession[] = [
   {
+    id: "inter-peito-ombro-triceps",
     part: "peito" as BodyPartId,
     title: "Peito, ombro e tríceps",
-    caption: "8 exercícios · 45–60 min",
+    caption: "45–60 min · personalize os exercícios",
     tag: "Hoje",
   },
   {
+    id: "inter-costas-biceps",
     part: "costas" as BodyPartId,
     title: "Costas e bíceps",
-    caption: "7 exercícios · 45–60 min",
+    caption: "45–60 min · personalize os exercícios",
     tag: "",
   },
   {
+    id: "inter-pernas-gluteo",
     part: "pernas" as BodyPartId,
     title: "Pernas e glúteo",
-    caption: "8 exercícios · 45–60 min",
+    caption: "45–60 min · personalize os exercícios",
     tag: "",
   },
 ];
 
-export const PROTO_ADV_BLOCKS = [
+export const PROTO_ADV_BLOCKS: ProtocolSession[] = [
   {
+    id: "avancado-volume",
     part: "full" as BodyPartId,
     title: "Semanas 1–4 · Volume",
     caption: "Séries totais e densidade",
     tag: "Base",
   },
   {
+    id: "avancado-intensidade",
     part: "peito" as BodyPartId,
     title: "Semanas 5–8 · Intensidade",
     caption: "Cargas maiores · RPE alto",
     tag: "",
   },
   {
+    id: "avancado-pico-deload",
     part: "core" as BodyPartId,
     title: "Semanas 9–12 · Pico e deload",
     caption: "Testes e recuperação",

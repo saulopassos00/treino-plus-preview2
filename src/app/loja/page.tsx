@@ -40,7 +40,7 @@ export default function LojaPage() {
   const { toast } = useToast();
   const [buying, setBuying] = useState<string | null>(null);
 
-  async function buy(id: string, title: string) {
+  async function buy(id: string) {
     if (ownsShop(id)) {
       toast("Já adquirido");
       return;
@@ -50,7 +50,7 @@ export default function LojaPage() {
     purchaseShopItem(id);
     if (id === "shop-annual") subscribePremium();
     setBuying(null);
-    toast(`${title} adicionado ✓`);
+    toast("Adicionado ao perfil (demonstração)");
   }
 
   return (
@@ -59,6 +59,9 @@ export default function LojaPage() {
         <h1 className="text-[34px] font-bold tracking-tight">Loja</h1>
         <p className="mt-1.5 text-[15px] text-neutral-500">
           Digitais e físicos selecionados
+        </p>
+        <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
+          Esta versão estática é uma demonstração e não processa pagamentos reais. Os preços exibidos são ilustrativos.
         </p>
       </header>
 
@@ -97,7 +100,7 @@ export default function LojaPage() {
                     </span>
                   ) : (
                     <span className="text-[11px] font-semibold text-[#007AFF]">
-                      {buying === p.id ? "…" : "Comprar"}
+                      {buying === p.id ? "…" : "Testar no app (demo)"}
                     </span>
                   )}
                 </div>
@@ -123,7 +126,7 @@ export default function LojaPage() {
               type="button"
               onClick={() => {
                 if (owned && p.href) return;
-                buy(p.id, p.t);
+                buy(p.id);
               }}
               className="overflow-hidden rounded-[14px] bg-white text-left shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]"
             >

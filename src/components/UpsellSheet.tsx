@@ -35,6 +35,10 @@ export function UpsellSheet({
           </button>
         </div>
 
+        <p className="mb-4 rounded-xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
+          Prévia do catálogo: preços são ilustrativos. Se o checkout estiver ativo, você verá as condições finais antes de confirmar; sem ele, nenhuma cobrança é feita.
+        </p>
+
         <button
           onClick={onSubscribe}
           className="mb-3 flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 p-4 text-left text-white"

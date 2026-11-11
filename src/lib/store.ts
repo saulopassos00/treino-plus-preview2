@@ -6,9 +6,11 @@ import type {
   CustomWorkout,
   DemoStore,
   Exercise,
+  ProtocolExercise,
   ProtocolLevel,
   RunProgramId,
   User,
+  WeeklyRoutineEntry,
   WorkoutItem,
 } from "@/types";
 
@@ -23,6 +25,9 @@ const defaultStore: DemoStore = {
   protocolProgress: { inter: 0, avancado: 0 },
   protocolStarted: { inter: false, avancado: false },
   protocolRemovedSessions: { inter: [], avancado: [] },
+  protocolOverrides: { inter: {}, avancado: {} },
+  protocolCompletedExerciseIds: { inter: {}, avancado: {} },
+  weeklyRoutine: {},
   corridaDone: [],
   corridaActive: null,
   ebookChaptersRead: [],
@@ -35,6 +40,52 @@ const defaultStore: DemoStore = {
 };
 
 function migrate(raw: Partial<DemoStore>): DemoStore {
+  const normalizeProtocolOverrides = (value: unknown): Record<string, ProtocolExercise[]> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([sessionId, entries]) => [
+        sessionId,
+        Array.isArray(entries)
+          ? entries.flatMap((entry, index): ProtocolExercise[] => {
+              if (!entry || typeof entry !== "object") return [];
+              const item = entry as Partial<ProtocolExercise>;
+              if (typeof item.id !== "string" || typeof item.name !== "string") return [];
+              return [{
+                id: item.id,
+                name: item.name,
+                order: Number.isFinite(item.order) ? Number(item.order) : index,
+                ...(Number.isFinite(item.sets) ? { sets: Number(item.sets) } : {}),
+                ...(typeof item.reps === "string" ? { reps: item.reps } : {}),
+                ...(Number.isFinite(item.restSec) ? { restSec: Number(item.restSec) } : {}),
+                ...(typeof item.notes === "string" ? { notes: item.notes } : {}),
+              }];
+            })
+          : [],
+      ])
+    );
+  };
+  const normalizeCompletedIds = (value: unknown): Record<string, string[]> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([sessionId, ids]) => [
+        sessionId,
+        Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [],
+      ])
+    );
+  };
+  const normalizeWeeklyRoutine = (value: unknown): Record<string, WeeklyRoutineEntry> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).flatMap(([dateKey, entry]) => {
+        if (!entry || typeof entry !== "object") return [];
+        const item = entry as Partial<WeeklyRoutineEntry>;
+        if (typeof item.activityId !== "string") return [];
+        return [[dateKey, { activityId: item.activityId, completed: item.completed === true }]];
+      })
+    );
+  };
+  const overrides = raw.protocolOverrides as Partial<Record<ProtocolLevel, unknown>> | undefined;
+  const completed = raw.protocolCompletedExerciseIds as Partial<Record<ProtocolLevel, unknown>> | undefined;
   return {
     ...defaultStore,
     ...raw,
@@ -56,6 +107,15 @@ function migrate(raw: Partial<DemoStore>): DemoStore {
         ? raw.protocolRemovedSessions.avancado
         : [],
     },
+    protocolOverrides: {
+      inter: normalizeProtocolOverrides(overrides?.inter),
+      avancado: normalizeProtocolOverrides(overrides?.avancado),
+    },
+    protocolCompletedExerciseIds: {
+      inter: normalizeCompletedIds(completed?.inter),
+      avancado: normalizeCompletedIds(completed?.avancado),
+    },
+    weeklyRoutine: normalizeWeeklyRoutine(raw.weeklyRoutine),
     ownedWorkoutIds: Array.isArray(raw.ownedWorkoutIds) ? raw.ownedWorkoutIds : [],
     ownedShopIds: Array.isArray(raw.ownedShopIds) ? raw.ownedShopIds : [],
     corridaDone: Array.isArray(raw.corridaDone) ? raw.corridaDone : [],
@@ -258,6 +318,169 @@ export function useDemoStore() {
     writeStore({
       ...cur,
       protocolProgress: { ...cur.protocolProgress, [level]: 0 },
+    });
+  }, []);
+
+  const addProtocolExercise = useCallback((
+    level: ProtocolLevel,
+    sessionId: string,
+    input: Omit<ProtocolExercise, "id" | "order">
+  ): string | null => {
+    const name = input.name.trim();
+    if (!name || !sessionId.trim()) return null;
+    const cur = getSnapshot();
+    const existing = cur.protocolOverrides[level][sessionId] ?? [];
+    const exercise: ProtocolExercise = {
+      ...input,
+      id: createId("protocol-exercise"),
+      name,
+      order: existing.length,
+      reps: input.reps?.trim() || undefined,
+      notes: input.notes?.trim() || undefined,
+    };
+    writeStore({
+      ...cur,
+      protocolOverrides: {
+        ...cur.protocolOverrides,
+        [level]: { ...cur.protocolOverrides[level], [sessionId]: [...existing, exercise] },
+      },
+    });
+    return exercise.id;
+  }, []);
+
+  const updateProtocolExercise = useCallback((
+    level: ProtocolLevel,
+    sessionId: string,
+    exerciseId: string,
+    updates: Partial<Omit<ProtocolExercise, "id" | "order">>
+  ): boolean => {
+    const cur = getSnapshot();
+    const existing = cur.protocolOverrides[level][sessionId] ?? [];
+    if (!existing.some((exercise) => exercise.id === exerciseId)) return false;
+    writeStore({
+      ...cur,
+      protocolOverrides: {
+        ...cur.protocolOverrides,
+        [level]: {
+          ...cur.protocolOverrides[level],
+          [sessionId]: existing.map((exercise) => exercise.id === exerciseId
+            ? {
+                ...exercise,
+                ...updates,
+                name: updates.name?.trim() || exercise.name,
+                reps: updates.reps === undefined ? exercise.reps : updates.reps.trim() || undefined,
+                notes: updates.notes === undefined ? exercise.notes : updates.notes.trim() || undefined,
+              }
+            : exercise),
+        },
+      },
+    });
+    return true;
+  }, []);
+
+  const removeProtocolExercise = useCallback((
+    level: ProtocolLevel,
+    sessionId: string,
+    exerciseId: string
+  ): boolean => {
+    const cur = getSnapshot();
+    const existing = cur.protocolOverrides[level][sessionId] ?? [];
+    if (!existing.some((exercise) => exercise.id === exerciseId)) return false;
+    const exercises = existing
+      .filter((exercise) => exercise.id !== exerciseId)
+      .map((exercise, order) => ({ ...exercise, order }));
+    const completed = cur.protocolCompletedExerciseIds[level][sessionId] ?? [];
+    writeStore({
+      ...cur,
+      protocolOverrides: {
+        ...cur.protocolOverrides,
+        [level]: { ...cur.protocolOverrides[level], [sessionId]: exercises },
+      },
+      protocolCompletedExerciseIds: {
+        ...cur.protocolCompletedExerciseIds,
+        [level]: {
+          ...cur.protocolCompletedExerciseIds[level],
+          [sessionId]: completed.filter((id) => id !== exerciseId),
+        },
+      },
+    });
+    return true;
+  }, []);
+
+  const reorderProtocolExercises = useCallback((
+    level: ProtocolLevel,
+    sessionId: string,
+    orderedIds: string[]
+  ): boolean => {
+    const cur = getSnapshot();
+    const existing = cur.protocolOverrides[level][sessionId] ?? [];
+    if (orderedIds.length !== existing.length) return false;
+    const byId = new Map(existing.map((exercise) => [exercise.id, exercise]));
+    if (new Set(orderedIds).size !== existing.length || orderedIds.some((id) => !byId.has(id))) return false;
+    const exercises = orderedIds.map((id, order) => ({ ...byId.get(id)!, order }));
+    writeStore({
+      ...cur,
+      protocolOverrides: {
+        ...cur.protocolOverrides,
+        [level]: { ...cur.protocolOverrides[level], [sessionId]: exercises },
+      },
+    });
+    return true;
+  }, []);
+
+  const toggleProtocolExerciseCompleted = useCallback((
+    level: ProtocolLevel,
+    sessionId: string,
+    exerciseId: string
+  ): boolean => {
+    const cur = getSnapshot();
+    const active = cur.protocolOverrides[level][sessionId] ?? [];
+    if (!active.some((exercise) => exercise.id === exerciseId)) return false;
+    const completed = cur.protocolCompletedExerciseIds[level][sessionId] ?? [];
+    const isCompleted = completed.includes(exerciseId);
+    writeStore({
+      ...cur,
+      protocolCompletedExerciseIds: {
+        ...cur.protocolCompletedExerciseIds,
+        [level]: {
+          ...cur.protocolCompletedExerciseIds[level],
+          [sessionId]: isCompleted
+            ? completed.filter((id) => id !== exerciseId)
+            : [...completed, exerciseId],
+        },
+      },
+    });
+    return !isCompleted;
+  }, []);
+
+  const updateWeeklyRoutineItem = useCallback((
+    dateKey: string,
+    updates: Partial<WeeklyRoutineEntry>
+  ) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
+    const cur = getSnapshot();
+    const existing = cur.weeklyRoutine[dateKey] ?? { activityId: "", completed: false };
+    const activityId = updates.activityId ?? existing.activityId;
+    const completed = updates.activityId !== undefined && updates.activityId !== existing.activityId
+      ? false
+      : updates.completed ?? existing.completed;
+    writeStore({
+      ...cur,
+      weeklyRoutine: {
+        ...cur.weeklyRoutine,
+        [dateKey]: { activityId, completed },
+      },
+    });
+  }, []);
+
+  const clearWeeklyRoutine = useCallback((dateKeys: string[]) => {
+    const cur = getSnapshot();
+    const keys = new Set(dateKeys);
+    writeStore({
+      ...cur,
+      weeklyRoutine: Object.fromEntries(
+        Object.entries(cur.weeklyRoutine).filter(([dateKey]) => !keys.has(dateKey))
+      ),
     });
   }, []);
 
@@ -543,6 +766,13 @@ export function useDemoStore() {
     removeProtocolSession,
     restoreProtocolSessions,
     resetProtocolProgress,
+    addProtocolExercise,
+    updateProtocolExercise,
+    removeProtocolExercise,
+    reorderProtocolExercises,
+    toggleProtocolExerciseCompleted,
+    updateWeeklyRoutineItem,
+    clearWeeklyRoutine,
     toggleProtocolInPlan,
     toggleCorridaDay,
     activateCorrida,

@@ -39,7 +39,10 @@ export default function LibraryPage() {
           Biblioteca
         </h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Compra única por treino · preços em BRL
+          Prévia da biblioteca · valores ilustrativos em BRL
+        </p>
+        <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
+          Esta versão não processa pagamentos: o acesso liberado é apenas uma prévia local, salva neste navegador, sem cobrança. Para vender de verdade, é necessário integrar um backend e validar o pagamento no servidor.
         </p>
       </header>
 

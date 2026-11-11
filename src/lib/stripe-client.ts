@@ -1,6 +1,8 @@
 /**
- * Client helper: start Stripe Checkout when keys are configured.
- * Returns demoFallback so UI can keep localStorage demo flows.
+ * Helper legado para uma integração futura de checkout hospedado.
+ * Não é chamado pela UI demo do GitHub Pages e nunca deve conceder acesso por
+ * conta própria: um backend precisa validar a sessão/evento Stripe antes de
+ * alterar propriedade ou assinatura.
  */
 
 export type StartCheckoutInput = {

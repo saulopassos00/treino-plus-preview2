@@ -3,14 +3,14 @@ import "./globals.css";
 import { AppShell } from "@/components/Shell";
 
 export const metadata: Metadata = {
-  title: "Treino Live — Live, treinos e loja",
+  title: "Treino Plus — Bem-estar e treinos",
   description:
-    "Lives, treinos, nutrição, planejamento de refeições, loja e Premium. Demo mobile-first.",
+    "Treinos, lives gravadas, nutrição, planejamento semanal e loja. Experiência demonstrativa mobile-first.",
   manifest: "/treino-plus-preview2/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Treino Live",
+    title: "Treino Plus",
   },
   icons: {
     icon: "/treino-plus-preview2/icons/icon-192.svg",

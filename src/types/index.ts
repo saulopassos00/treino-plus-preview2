@@ -46,6 +46,31 @@ export interface WorkoutItem {
   notes?: string;
 }
 
+/** Exercício individual configurável dentro de uma sessão de protocolo. */
+export interface ProtocolExercise {
+  id: string;
+  name: string;
+  order: number;
+  sets?: number;
+  /** Texto livre para formatos como 8–10 ou 30 s. */
+  reps?: string;
+  restSec?: number;
+  notes?: string;
+}
+
+export interface ProtocolSession {
+  id: string;
+  part: BodyPartId;
+  title: string;
+  caption: string;
+  tag?: string;
+}
+
+export interface WeeklyRoutineEntry {
+  activityId: string;
+  completed: boolean;
+}
+
 /** Treino criado pelo usuário. exerciseId pode referenciar um exercício próprio ou de catálogo. */
 export interface CustomWorkout {
   id: string;
@@ -101,6 +126,12 @@ export interface DemoStore {
   protocolStarted: Record<ProtocolLevel, boolean>;
   /** Títulos de sessões removidas pelo usuário em cada protocolo. */
   protocolRemovedSessions: Record<ProtocolLevel, string[]>;
+  /** Exercícios editáveis, separados do catálogo de sessões de protocolo. */
+  protocolOverrides: Record<ProtocolLevel, Record<string, ProtocolExercise[]>>;
+  /** IDs dos exercícios que o usuário marcou como concluídos. */
+  protocolCompletedExerciseIds: Record<ProtocolLevel, Record<string, string[]>>;
+  /** Roteiro semanal por data local YYYY-MM-DD; persistido somente neste navegador. */
+  weeklyRoutine: Record<string, WeeklyRoutineEntry>;
   /** day keys like "5k:w1:d1" */
   corridaDone: string[];
   corridaActive: RunProgramId | null;

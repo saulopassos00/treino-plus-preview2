@@ -1,7 +1,7 @@
 {
-  "name": "Treino Live — Treinos e Aulas",
-  "short_name": "Treino Live",
-  "description": "Lives gratuitas, treinos rápidos, protocolos, corrida, nutrição e loja.",
+  "name": "Treino Plus — Bem-estar e treinos",
+  "short_name": "Treino Plus",
+  "description": "Treinos, lives gravadas, nutrição, planejamento semanal e loja.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { getWorkout, formatBRL } from "@/lib/data";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 import { CheckoutModal } from "@/components/CheckoutModal";
@@ -13,21 +13,11 @@ function WorkoutDetailInner() {
   const params = useParams();
   const id = String(params?.id ?? "");
   const workout = getWorkout(id);
-  const { owns, user, purchaseWorkout } = useDemoStore();
+  const { owns, user } = useDemoStore();
   const mounted = useHasMounted();
-  const search = useSearchParams();
-  const router = useRouter();
   const [checkout, setCheckout] = useState(false);
   const [auth, setAuth] = useState(false);
   const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    if (!mounted || !workout) return;
-    if (search.get("paid") !== "1") return;
-    if (!owns(workout.id)) purchaseWorkout(workout.id);
-    // Strip query so refresh doesn't re-fire awkwardly
-    router.replace(`/workout/${workout.id}`, { scroll: false });
-  }, [mounted, workout, search, owns, purchaseWorkout, router]);
 
   if (!workout) {
     return (
@@ -109,7 +99,7 @@ function WorkoutDetailInner() {
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 py-4 text-sm font-semibold text-white"
             >
               <IconLock className="h-4 w-4" />
-              Comprar por {formatBRL(workout.priceBRL)}
+              Continuar · {formatBRL(workout.priceBRL)}
             </button>
             {!user && mounted && (
               <button
@@ -119,8 +109,8 @@ function WorkoutDetailInner() {
                 Já tem conta? Entrar
               </button>
             )}
-            <p className="text-center text-xs text-neutral-400">
-              Compra única · checkout Stripe (demo)
+            <p className="rounded-xl bg-amber-50 p-3 text-center text-xs leading-relaxed text-amber-950">
+              Valor de referência. Esta versão estática não processa pagamentos; o botão libera somente uma prévia local. Para vender de verdade, é necessário validar o pagamento no servidor antes de liberar o treino.
             </p>
           </div>
         )}
@@ -131,7 +121,7 @@ function WorkoutDetailInner() {
             <li>• Aquecimento e ativação</li>
             <li>• Bloco principal guiado</li>
             <li>• Finalização e alongamento</li>
-            <li>• Acesso vitalício neste demo</li>
+            <li>• Acesso nesta prévia demonstrativa</li>
           </ul>
         </div>
       </div>

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { freeLive } from "@/lib/data";
-import { LiveBadge } from "@/components/LiveBadge";
 import { UpsellSheet } from "@/components/UpsellSheet";
 import { SubscribeModal } from "@/components/SubscribeModal";
 import { IconClose, IconExpand, IconMinimize } from "@/components/Icons";
@@ -54,7 +53,6 @@ function saveChat(messages: ChatMessage[]) {
 }
 
 export default function FreeLivePage() {
-  const [viewers, setViewers] = useState(freeLive.viewerCount);
   const [chat, setChat] = useState<ChatMessage[]>(MOCK_CHAT.slice(0, 3));
   const [upsell, setUpsell] = useState(false);
   const [subscribe, setSubscribe] = useState(false);
@@ -73,24 +71,14 @@ export default function FreeLivePage() {
     const existing = loadChat();
     setChat(existing);
 
-    // Join once per session → bump viewer mock
     const already = sessionStorage.getItem(JOIN_KEY);
     if (!already) {
       sessionStorage.setItem(JOIN_KEY, "1");
-      setViewers((v) => v + 1);
       setJoined(true);
     } else {
       setJoined(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (!joined) return;
-    const t = setInterval(() => {
-      setViewers((v) => Math.max(1, v + Math.floor(Math.random() * 5) - 1));
-    }, 4000);
-    return () => clearInterval(t);
-  }, [joined]);
 
   useEffect(() => {
     let i = Math.max(3, chat.length);
@@ -121,11 +109,6 @@ export default function FreeLivePage() {
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joined]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setUpsell(true), 12000);
-    return () => clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     const syncFullscreen = () => {
@@ -219,12 +202,11 @@ export default function FreeLivePage() {
             >
               <IconClose className="h-4 w-4" />
             </Link>
-            <LiveBadge />
+            <span className="rounded-full bg-amber-300 px-2.5 py-1.5 text-[10px] font-bold text-neutral-950">
+              DEMONSTRAÇÃO · não é transmissão real
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-medium backdrop-blur">
-              {viewers.toLocaleString("pt-BR")} assistindo
-            </div>
             <button
               type="button"
               onClick={toggleFullscreen}
@@ -247,7 +229,7 @@ export default function FreeLivePage() {
             {freeLive.title}
           </h1>
           <p className="mt-1 text-xs text-white/75">
-            Grátis · sem login · sem pagamento
+            Demonstração · sem transmissão real
             {joined ? " · você entrou" : ""}
           </p>
         </div>
@@ -256,7 +238,7 @@ export default function FreeLivePage() {
       <div className="flex flex-1 flex-col rounded-t-3xl bg-neutral-900 px-4 pb-6 pt-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/55">
-            Conversa da live
+            Chat simulado (mensagens locais)
           </p>
           <Link
             href="/live/replays"

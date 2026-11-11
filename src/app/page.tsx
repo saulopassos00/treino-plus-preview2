@@ -1,283 +1,148 @@
 "use client";
 
 import Link from "next/link";
-import { freeLive, formatBRL, PREMIUM_PRICE_BRL } from "@/lib/data";
 import { useDemoStore, useHasMounted } from "@/lib/store";
-import { LiveBadge } from "@/components/LiveBadge";
+import { getProtocolProgress } from "@/lib/protocol-progress";
+import { formatWeekRange, getWeekDays, toLocalDateKey, WEEK_ACTIVITIES } from "@/lib/week";
 import { IconChevron, IconPlay } from "@/components/Icons";
 import { BodySilhouette } from "@/components/BodySilhouette";
-import {
-  AdaptColuna,
-  BookMark,
-  RouteIllust,
-} from "@/components/Illustrations";
+import { BookMark, RouteIllust, AdaptColuna } from "@/components/Illustrations";
 
 export default function HomePage() {
-  const { user, protocolProgress, streak, corridaDone, ebookChaptersRead } =
-    useDemoStore();
+  const store = useDemoStore();
   const mounted = useHasMounted();
-  const name = mounted && user?.name ? user.name.split(" ")[0] : "você";
-  const interPct = mounted ? protocolProgress.inter || 0 : 0;
-  const runDone = mounted ? corridaDone.filter((k) => k.startsWith("5k:")).length : 0;
-  const chapters = mounted ? ebookChaptersRead.length : 0;
+  const greeting = mounted && store.user?.name
+    ? `Olá, ${store.user.name.split(" ")[0]}`
+    : "Olá";
+  const days = getWeekDays();
+  const today = days.find((day) => day.dateKey === toLocalDateKey(new Date())) ?? days[0];
+  const weeklyEntries = mounted ? store.weeklyRoutine : {};
+  const plannedDays = days.filter((day) => weeklyEntries[day.dateKey]?.activityId).length;
+  const completedDays = days.filter((day) => weeklyEntries[day.dateKey]?.activityId && weeklyEntries[day.dateKey]?.completed).length;
+  const todayEntry = today ? weeklyEntries[today.dateKey] : undefined;
+  const todayActivity = WEEK_ACTIVITIES.find((activity) => activity.id === todayEntry?.activityId);
+  const runDone = mounted ? store.corridaDone.filter((key) => key.startsWith("5k:")).length : 0;
+  const chapters = mounted ? store.ebookChaptersRead.length : 0;
+  const activeProtocol = mounted && store.protocolStarted.inter
+    ? { level: "inter" as const, label: "Intermediário", href: "/treinos/protocolo/inter" }
+    : mounted && store.protocolStarted.avancado
+      ? { level: "avancado" as const, label: "Avançado", href: "/treinos/protocolo/avancado" }
+      : null;
+  const protocolPct = activeProtocol ? getProtocolProgress(store, activeProtocol.level) : 0;
 
   return (
-    <main className="pb-4 pt-2">
-      <header className="mb-3 px-5 pt-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-[34px] font-bold leading-tight tracking-tight">
-              Olá, {name}
-            </h1>
-            <p className="mt-1.5 text-[15px] text-neutral-500">
-              {interPct > 0
-                ? `Protocolo Inter · ${interPct}% · streak ${mounted ? streak : 0}`
-                : "Live grátis · protocolos · corrida · loja"}
-            </p>
-          </div>
-          <Link
-            href="/meu-plano"
-            className="rounded-full bg-neutral-900/5 px-3 py-1.5 text-xs font-medium text-neutral-600"
-          >
-            Meu plano
-          </Link>
+    <main className="space-y-6 pb-6 pt-2">
+      <header className="flex items-end justify-between px-5 pt-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#007AFF]">Treino Plus</p>
+          <h1 className="mt-1 text-[32px] font-bold leading-tight tracking-tight">{greeting}</h1>
+          <p className="mt-1 text-sm text-neutral-500">Seu espaço para se movimentar no seu ritmo.</p>
         </div>
+        <Link href="/account" className="rounded-full bg-neutral-900/5 px-3 py-2 text-xs font-semibold text-neutral-600">Perfil</Link>
       </header>
 
-      {/* Free live hero — funnel */}
-      <section className="mb-6 px-4">
-        <Link
-          href="/live/free"
-          className={`relative block overflow-hidden rounded-[18px] bg-gradient-to-br ${freeLive.gradient} p-5 text-white shadow-lg shadow-orange-500/20 transition active:scale-[0.985]`}
-        >
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-black/10 to-black/30" />
-            <div className="absolute -right-10 top-0 h-40 w-40 rounded-full bg-white/15 blur-3xl" />
-            <div className="absolute -bottom-16 left-10 h-44 w-44 rounded-full bg-black/25 blur-2xl" />
-          </div>
-          <div className="relative z-10 drop-shadow">
-            <div className="flex items-center gap-2">
-              <LiveBadge />
-              <span className="text-xs font-semibold text-white">
-                Grátis · sem login
-              </span>
-            </div>
-            <h2 className="mt-4 max-w-[15rem] text-[26px] font-bold leading-tight tracking-tight text-white">
-              {freeLive.title}
-            </h2>
-            <p className="mt-2 max-w-[16rem] text-sm font-medium text-white/95">
-              {freeLive.description}
-            </p>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 shadow-md">
-              <IconPlay className="h-4 w-4" />
-              Entrar na live
-            </div>
-            <p className="mt-3 text-xs font-medium text-white/90">
-              {freeLive.viewerCount.toLocaleString("pt-BR")} assistindo agora
-            </p>
-          </div>
-        </Link>
+      <section className="mx-4 overflow-hidden rounded-[26px] bg-gradient-to-br from-[#123C65] via-[#0876D9] to-[#48B7C9] p-5 text-white shadow-lg shadow-blue-900/10">
+        <span className="inline-flex rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">Treinos · lives · bem-estar</span>
+        <h2 className="mt-4 max-w-sm text-[25px] font-bold leading-tight tracking-tight">Encontre um treino. Organize sua semana. Continue no seu ritmo.</h2>
+        <p className="mt-2 max-w-sm text-sm text-white/85">Comece pelo que cabe no seu dia — e ajuste o plano quando quiser.</p>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Link href="/treinos" className="rounded-xl bg-white px-3 py-3 text-center text-sm font-bold text-[#123C65]">Escolher treino</Link>
+          <Link href="/semana" className="rounded-xl bg-black/15 px-3 py-3 text-center text-sm font-bold text-white ring-1 ring-white/30">Montar minha semana</Link>
+        </div>
       </section>
 
-      <section className="mb-6 px-4">
-        <Link
-          href="/live/replays"
-          className="flex items-center gap-3 rounded-[18px] bg-white px-4 py-3 shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.99]"
-        >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
-            <IconPlay className="h-5 w-5" />
+      <section className="mx-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.05]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Minha semana · {formatWeekRange(days)}</p>
+            <h2 className="mt-1 text-lg font-bold">{plannedDays ? `${completedDays} de ${plannedDays} dias concluídos` : "Seu roteiro começa com uma escolha"}</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              {todayActivity ? `Hoje: ${todayActivity.label}${todayEntry?.completed ? " · concluído" : ""}` : "Escolha treinos, corrida, replays, nutrição ou descanso."}
+            </p>
+          </div>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#007AFF]" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3m-3 3h7" strokeLinecap="round"/></svg>
           </span>
-          <span className="min-w-0 flex-1">
-            <strong className="block text-sm font-semibold">Lives gravadas</strong>
-            <span className="mt-0.5 block text-xs text-neutral-500">
-              Não conseguiu assistir? Veja no seu ritmo.
-            </span>
-          </span>
-          <IconChevron className="h-4 w-4 shrink-0 text-neutral-400" />
-        </Link>
+        </div>
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-neutral-100" role="progressbar" aria-label="Dias concluídos no roteiro semanal" aria-valuemin={0} aria-valuemax={plannedDays || 7} aria-valuenow={completedDays}>
+          <div className="h-full rounded-full bg-[#007AFF] transition-all" style={{ width: `${plannedDays ? (completedDays / plannedDays) * 100 : 0}%` }} />
+        </div>
+        <Link href="/semana" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#007AFF]">Abrir roteiro semanal <IconChevron className="h-4 w-4" /></Link>
       </section>
 
-      {/* Continuar */}
-      <p className="px-5 pb-3 text-xl font-bold tracking-tight">Continuar</p>
-      <div className="-mx-0 mb-6 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none">
-        <Link
-          href="/treinos/protocolo/inter"
-          className="flex w-[148px] shrink-0 flex-col overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-a flex h-24 items-center justify-center p-2">
-            <BodySilhouette part="peito" className="h-20 w-12" />
-          </div>
-          <div className="p-3">
-            <strong className="block text-[15px] font-semibold leading-tight">
-              Treino A · Peito
-            </strong>
-            <span className="mt-1 block text-xs text-neutral-500">
-              Continuar · {interPct || 0}%
-            </span>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
-              <span
-                className="block h-full rounded-full bg-[#007AFF]"
-                style={{ width: `${interPct || 0}%` }}
-              />
-            </div>
-          </div>
-        </Link>
-        <Link
-          href="/treinos/fast"
-          className="flex w-[148px] shrink-0 flex-col overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-fast flex h-24 items-center justify-center p-2">
-            <BodySilhouette part="full" className="h-20 w-12" />
-          </div>
-          <div className="p-3">
-            <strong className="block text-[15px] font-semibold leading-tight">
-              Fast Trainer
-            </strong>
-            <span className="mt-1 block text-xs text-neutral-500">
-              15 min · Quicky
-            </span>
-          </div>
-        </Link>
-        <Link
-          href="/corrida/5k"
-          className="flex w-[148px] shrink-0 flex-col overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-run5 flex h-24 items-center justify-center p-3">
-            <RouteIllust className="h-12 w-20" />
-          </div>
-          <div className="p-3">
-            <strong className="block text-[15px] font-semibold leading-tight">
-              0 → 5 km
-            </strong>
-            <span className="mt-1 block text-xs text-neutral-500">
-              {runDone > 0 ? `${runDone} dias feitos` : "Semana 1 pronta"}
-            </span>
-          </div>
-        </Link>
-      </div>
-
-      {/* Funnel cards */}
-      <section className="mb-6 px-4">
-        <h2 className="mb-3 px-1 text-xl font-bold tracking-tight">
-          Continue evoluindo
-        </h2>
+      <section className="px-4">
+        <div className="mb-3 flex items-end justify-between px-1">
+          <div><h2 className="text-xl font-bold tracking-tight">Treinar hoje</h2><p className="text-xs text-neutral-500">Escolha a duração e o tipo de atividade.</p></div>
+          <Link href="/treinos" className="text-xs font-semibold text-[#007AFF]">Ver todos</Link>
+        </div>
         <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/library"
-            className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]"
-          >
-            <div className="mb-8 flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M4 6h6v12H4zm8-2h8v16h-8z" />
-              </svg>
-            </div>
-            <p className="text-sm font-semibold">Biblioteca VOD</p>
-            <p className="mt-1 text-xs text-neutral-500">
-              Compra única a partir de {formatBRL(14.9)}
-            </p>
+          <Link href="/treinos/fast" className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]">
+            <div className="tone-fast flex h-24 items-center justify-center"><BodySilhouette part="full" className="h-20 w-12" /></div>
+            <div className="p-3"><strong className="block text-sm">Fast Trainer</strong><span className="mt-1 block text-xs text-neutral-500">15 min · sessão rápida</span></div>
           </Link>
-          <Link
-            href="/live/premium"
-            className="rounded-3xl bg-gradient-to-br from-violet-600 to-fuchsia-500 p-4 text-white shadow-sm transition active:scale-[0.98]"
-          >
-            <div className="mb-8 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7-6-4.6h7.6z" />
-              </svg>
-            </div>
-            <p className="text-sm font-semibold">Premium Live</p>
-            <p className="mt-1 text-xs text-white/80">
-              {formatBRL(PREMIUM_PRICE_BRL)}/mês
-            </p>
+          {activeProtocol ? (
+            <Link href={activeProtocol.href} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]">
+              <div className="tone-a flex h-24 items-center justify-center"><BodySilhouette part="peito" className="h-20 w-12" /></div>
+              <div className="p-3"><strong className="block text-sm">Protocolo {activeProtocol.label}</strong><span className="mt-1 block text-xs text-neutral-500">{protocolPct}% dos exercícios concluídos</span></div>
+            </Link>
+          ) : (
+            <Link href="/treinos/protocolo/inter" className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]">
+              <div className="tone-a flex h-24 items-center justify-center"><BodySilhouette part="peito" className="h-20 w-12" /></div>
+              <div className="p-3"><strong className="block text-sm">Protocolos</strong><span className="mt-1 block text-xs text-neutral-500">Escolha o seu nível</span></div>
+            </Link>
+          )}
+          <Link href="/corrida/5k" className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]">
+            <div className="tone-run5 flex h-24 items-center justify-center p-3"><RouteIllust className="h-12 w-20" /></div>
+            <div className="p-3"><strong className="block text-sm">Corrida 0 → 5 km</strong><span className="mt-1 block text-xs text-neutral-500">{runDone ? `${runDone} dias marcados` : "Programa progressivo"}</span></div>
+          </Link>
+          <Link href="/live/replays" className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04] transition active:scale-[0.98]">
+            <div className="flex h-24 items-center justify-center bg-orange-50 text-orange-600"><IconPlay className="h-8 w-8" /></div>
+            <div className="p-3"><strong className="block text-sm">Lives gravadas</strong><span className="mt-1 block text-xs text-neutral-500">Assista no seu ritmo</span></div>
           </Link>
         </div>
       </section>
 
-      {/* Explorar — modules only, no Métodos / Por grupo */}
-      <p className="px-5 pb-3 text-xl font-bold tracking-tight">Explorar</p>
-      <div className="space-y-3 px-4">
-        <Link
-          href="/adaptacoes"
-          className="flex overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-i flex w-28 shrink-0 items-center justify-center">
-            <AdaptColuna className="h-16 w-16" />
+      <section className="mx-4 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+        <div className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold text-amber-900">i</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-amber-950">Sala Live em demonstração</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-amber-900">Veja como será a experiência; a transmissão, a audiência e o chat ainda não são ao vivo.</p>
           </div>
-          <div className="flex-1 p-4">
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600">
-              Programas
-            </span>
-            <strong className="mt-2 block text-[15px] font-semibold">
-              Adaptações
-            </strong>
-            <p className="mt-1 text-xs text-neutral-500">
-              Lipedema, gestação, joelho e coluna
-            </p>
-          </div>
-          <IconChevron className="mr-3 mt-6 h-4 w-4 self-start text-neutral-300" />
-        </Link>
-        <Link
-          href="/ebook"
-          className="flex overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div
-            className="flex w-28 shrink-0 items-center justify-center"
-            style={{ background: "linear-gradient(165deg,#1A3A2A,#52B788)" }}
-          >
-            <BookMark className="h-14 w-11" />
-          </div>
-          <div className="flex-1 p-4">
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-              Novo
-            </span>
-            <strong className="mt-2 block text-[15px] font-semibold">
-              Ebook de nutrição
-            </strong>
-            <p className="mt-1 text-xs text-neutral-500">
-              Guia prático · 48 páginas
-              {chapters > 0 ? ` · ${chapters}/7 lidos` : ""}
-            </p>
-          </div>
-        </Link>
-        <Link
-          href="/corrida"
-          className="flex overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-run5 flex w-28 shrink-0 items-center justify-center p-3">
-            <RouteIllust className="h-14 w-20" />
-          </div>
-          <div className="flex-1 p-4">
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600">
-              Corrida
-            </span>
-            <strong className="mt-2 block text-[15px] font-semibold">
-              0 → 5 e 0 → 10 km
-            </strong>
-            <p className="mt-1 text-xs text-neutral-500">
-              Programas progressivos com rota
-            </p>
-          </div>
-        </Link>
-        <Link
-          href="/treinos"
-          className="flex overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/[0.04] transition active:opacity-90"
-        >
-          <div className="tone-h flex w-28 shrink-0 items-center justify-center p-2">
-            <BodySilhouette part="full" className="h-20 w-12" />
-          </div>
-          <div className="flex-1 p-4">
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-[#007AFF]">
-              Hub
-            </span>
-            <strong className="mt-2 block text-[15px] font-semibold">
-              Todos os treinos
-            </strong>
-            <p className="mt-1 text-xs text-neutral-500">
-              Protocolos · Fast · grupos musculares
-            </p>
-          </div>
-        </Link>
-      </div>
+          <Link href="/live/free" className="shrink-0 rounded-full bg-white px-3 py-2 text-xs font-semibold text-amber-900 ring-1 ring-amber-200">Ver prévia</Link>
+        </div>
+      </section>
+
+      <section className="px-4">
+        <h2 className="mb-3 px-1 text-xl font-bold tracking-tight">Planejar e aprender</h2>
+        <div className="space-y-3">
+          <Link href="/nutricao" className="flex overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04]">
+            <div className="flex w-24 shrink-0 items-center justify-center bg-emerald-50 text-emerald-700"><span className="text-3xl" aria-hidden="true">✳</span></div>
+            <div className="flex-1 p-4"><span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Nutrição</span><strong className="mt-1 block text-[15px]">Organize suas refeições</strong><p className="mt-1 text-xs text-neutral-500">Dicas e planejador semanal · conteúdo educativo</p></div>
+            <IconChevron className="mr-3 mt-6 h-4 w-4 shrink-0 text-neutral-300" />
+          </Link>
+          <Link href="/meu-plano" className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl font-bold text-[#007AFF]" aria-hidden="true">＋</span>
+            <span className="min-w-0 flex-1"><strong className="block text-sm">Meu plano</strong><span className="mt-0.5 block text-xs text-neutral-500">Crie treinos e personalize exercícios</span></span>
+            <IconChevron className="h-4 w-4 text-neutral-300" />
+          </Link>
+          <Link href="/ebook" className="flex overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04]">
+            <div className="flex w-24 shrink-0 items-center justify-center" style={{ background: "linear-gradient(165deg,#1A3A2A,#52B788)" }}><BookMark className="h-14 w-11" /></div>
+            <div className="flex-1 p-4"><span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Guia</span><strong className="mt-1 block text-[15px]">Ebook de nutrição</strong><p className="mt-1 text-xs text-neutral-500">Guia prático · {chapters}/7 capítulos lidos</p></div>
+            <IconChevron className="mr-3 mt-6 h-4 w-4 shrink-0 text-neutral-300" />
+          </Link>
+        </div>
+      </section>
+
+      <section className="px-4">
+        <h2 className="mb-3 px-1 text-xl font-bold tracking-tight">Explorar mais</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/adaptacoes" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]"><div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-neutral-50"><AdaptColuna className="h-11 w-11" /></div><strong className="block text-sm">Adaptações</strong><span className="mt-1 block text-xs text-neutral-500">Joelho, coluna e mais</span></Link>
+          <Link href="/library" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]"><div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-sky-50 text-sky-700"><svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h6v12H4zm8-2h8v16h-8z" /></svg></div><strong className="block text-sm">Biblioteca VOD</strong><span className="mt-1 block text-xs text-neutral-500">Treinos gravados · prévia</span></Link>
+          <Link href="/loja" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]"><div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-orange-50 text-2xl text-orange-600" aria-hidden="true">▢</div><strong className="block text-sm">Loja</strong><span className="mt-1 block text-xs text-neutral-500">Catálogo demonstrativo</span></Link>
+          <Link href="/corrida" className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]"><div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-lime-50"><RouteIllust className="h-9 w-14" /></div><strong className="block text-sm">Programas de corrida</strong><span className="mt-1 block text-xs text-neutral-500">Planos 5 km e 10 km</span></Link>
+        </div>
+      </section>
     </main>
   );
 }

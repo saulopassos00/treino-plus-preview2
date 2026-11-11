@@ -1,8 +1,8 @@
-# Treino Live
+# Treino Plus
 
-App mobile-first de fitness trainer (UI em **PT-BR**): live gratuita (topo de funil), VODs, Premium Live, **protocolos**, Fast Trainer, corrida, adaptações, ebook e loja.
+App mobile-first de bem-estar e fitness (UI em **PT-BR**): treinos, lives gravadas, Premium demonstrativo, **protocolos**, Fast Trainer, corrida, adaptações, nutrição, ebook e loja.
 
-Demo completa **sem chaves Stripe** — auth, compras, assinatura e progresso persistem em `localStorage` (`treino-live-demo-v2`).
+Versão estática demonstrativa — login, compras, assinatura e progresso persistem em `localStorage` (`treino-live-demo-v2`); não processa cobranças reais.
 
 ## Como rodar
 
@@ -23,10 +23,11 @@ npm run build && npm start   # produção local
 
 | Rota | Tela | Notas |
 |------|------|--------|
-| `/` | Início / Home | Hero **Free Live** + Continuar + funil VOD/Premium + Explorar (adaptações, ebook, corrida, treinos). Sem “Métodos em destaque” / “Por grupo muscular” na Home |
+| `/` | Início / Home | Acesso a treinos, rotina semanal e módulos já disponíveis |
+| `/semana` | Minha semana | Roteiro configurável por data local; atividades existentes, descanso e conclusão manual por dia |
 | `/treinos` | Hub de treinos | Fast Trainer, protocolos Inter/Avançado, métodos, grid de grupos musculares com silhuetas |
-| `/treinos/protocolo/inter` | Protocolo Intermediário | Sessões com highlights + % persistido |
-| `/treinos/protocolo/avancado` | Protocolo Avançado | Blocos de periodização + % persistido |
+| `/treinos/protocolo/inter` | Protocolo Intermediário | Sessões; exercícios editáveis, removíveis, ordenáveis e marcáveis como concluídos; progresso por exercício |
+| `/treinos/protocolo/avancado` | Protocolo Avançado | Blocos de periodização com os mesmos controles de exercícios e progresso |
 | `/treinos/fast` | Fast / Quicky Trainer | Timer real (work/rest · 4 rounds) → toast + streak |
 | `/treinos/corpo/[part]` | Grupo muscular | Peito, Costas, Bíceps, Tríceps, Ombros, Glúteo, Pernas, Full, Core |
 | `/corrida` | Hub corrida | 0→5 km e 0→10 km |
@@ -35,14 +36,14 @@ npm run build && npm start   # produção local
 | `/adaptacoes/[id]` | Detalhe | Exercícios + salvar no plano |
 | `/ebook` | Ebook nutri | Capa + capítulos marcáveis como lidos |
 | `/loja` | Marketplace | Grid com preços · buy demo → owned |
-| `/library` | Biblioteca VOD | 6 treinos compra única (legado do funil) |
-| `/workout/[id]` | Detalhe VOD | Checkout Stripe-shaped / demo |
-| `/live/free` | Sala Free Live | Sem login · join +1 viewer · chat na session · upsells |
+| `/library` | Biblioteca VOD | 6 treinos VOD; preço de referência e liberação demonstrativa |
+| `/workout/[id]` | Detalhe VOD | Prévia local; não processa cobranças |
+| `/live/free` | Sala Free Live | Prévia interativa · sala/chat demonstrativos · upsells manuais |
 | `/live/replays` | Lives gravadas | Catálogo com acesso aberto/Premium e player para YouTube, Vimeo ou vídeo HTTPS |
 | `/live/premium` | Lobby Premium Live | Gate por assinatura demo |
-| `/account` | Perfil | Auth, streak, protocolo %, ebook, VODs, loja, portal |
-| `/meu-plano` | Meu plano | Criar treinos e exercícios personalizados; adicionar, editar, reordenar e remover itens |
-| `/trainer` | Host panel | Go live (free) mock |
+| `/account` | Perfil | Login, compras e assinatura demonstrativos, salvos localmente |
+| `/meu-plano` | Meu plano | Criar treinos e exercícios personalizados; adicionar, editar, reordenar e remover itens; acompanhar protocolos |
+| `/trainer` | Host panel | Prévia visual; não transmite vídeo real |
 
 ## Catálogo de lives gravadas
 
@@ -50,15 +51,16 @@ Os replays são cadastrados no array `liveReplays` de `src/lib/replays.ts`. Cada
 
 O bloqueio Premium é apenas demonstrativo no GitHub Pages: como o app é estático e a assinatura é simulada no navegador, ele não protege links privados contra acesso direto. Para vender ou restringir gravações de verdade, integrar autenticação e uma plataforma que forneça autorização de playback segura (por exemplo, URLs assinadas).
 
-**Bottom nav:** Início · Treinos · Live · Loja · Perfil
+**Bottom nav:** Início · Treinos · Meu plano · Live · Nutrição · Loja · Perfil
 
 ## O que ficou mais funcional (demo)
 
-- Progresso persistido: protocolo %, dias de corrida, capítulos do ebook, VODs, itens da loja, premium, streak, adaptações salvas
+- Progresso persistido: exercícios concluídos por sessão de protocolo, roteiro semanal, dias de corrida, capítulos do ebook, VODs, itens da loja, premium, streak e adaptações salvas
 - Meu plano: treinos e exercícios personalizados persistidos no localStorage
+- Protocolos: nomes/séries/repetições/descanso/notas editáveis por exercício; itens podem ser reordenados, concluídos e removidos sem apagar a sessão
 - Fast Trainer: countdown work/rest que completa workout → toast + streak
-- Free live: join incrementa viewers (1×/sessão); mensagens do chat ficam em `sessionStorage`
-- Loja: “Comprar” adiciona a `ownedShopIds` (Plano Anual também ativa Premium)
+- Free Live: prévia, sem transmissão real; mensagens do chat são demonstrativas e ficam em `sessionStorage`
+- Loja: botões demonstrativos; não processam pagamentos reais nesta versão estática
 - Upsells Free Live → VOD / Premium mantidos
 - Silhuetas SVG e ilustrações portadas de `trainer-preview` como componentes React
 
@@ -80,15 +82,16 @@ Fontes: `src/lib/data.ts`, `src/lib/content.ts`
 |---------|--------|
 | UI / navegação / funil / módulos Treino+ | Real (Next.js App Router) |
 | Auth | **Demo** — localStorage |
-| Checkout VOD / Loja / Assinatura | **Demo** — modais / local buy |
+| Checkout VOD / Loja / Assinatura | **Demo** — altera somente estado local; sem cobrança |
 | Live / player / chat | **Mock** — session chat, sem WebRTC |
 | Fast timer | **Funcional** no client |
-| Pagamentos reais | Não — sem Stripe keys (fallback demo) |
+| Pagamentos reais | Não nesta versão estática; requer backend e confirmação Stripe no servidor |
 
-## Wiring Stripe + Supabase
+## Integração futura: Stripe + Supabase
 
-Stubs em `src/lib/stripe*`, `src/app/api/stripe/*` (moved to `_api_server_only/` for Pages), `src/lib/supabase/*` + `.env.example`.
-UI demo não depende de keys; com `STRIPE_SECRET_KEY` o checkout tenta Hosted Checkout.
+Stubs futuros em `src/lib/stripe*`, `_api_server_only/` e `src/lib/supabase/*` permanecem no repositório; não são chamados pela interface demo do GitHub Pages.
+
+Os botões de VOD e Premium apenas simulam acesso local no navegador. A aplicação ignora `?paid=1` e `?subscribed=1`: parâmetros de URL não provam pagamento. Para vender de verdade, será necessário backend que valide sessão/evento Stripe (por exemplo, webhook assinado) antes de atualizar a propriedade ou assinatura.
 
 ## Stack
 

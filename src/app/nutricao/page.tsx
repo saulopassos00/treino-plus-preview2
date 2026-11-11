@@ -137,6 +137,9 @@ export default function NutritionPage() {
         <p className="mt-1 text-sm text-neutral-500">
           Ideias práticas para aprender, escolher e planejar refeições.
         </p>
+        <p className="mt-3 rounded-2xl bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950/80" role="note">
+          Conteúdo educativo; não substitui o atendimento individual de um nutricionista.
+        </p>
       </header>
 
       <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-emerald-900 via-emerald-700 to-lime-600 p-5 text-white shadow-lg shadow-emerald-900/10">

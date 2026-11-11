@@ -4,13 +4,11 @@ import { useState } from "react";
 import { IconCheck, IconClose } from "./Icons";
 import { formatBRL, PREMIUM_PERIOD, PREMIUM_PRICE_BRL } from "@/lib/data";
 import { useDemoStore } from "@/lib/store";
-import { getPremiumPriceId, startCheckout } from "@/lib/stripe-client";
 
 const perks = [
-  "Lives premium exclusivas",
-  "Q&A ao vivo com o trainer",
-  "Acesso prioritário a novos formatos",
-  "Cancele quando quiser",
+  "Acesso demonstrativo à área Premium",
+  "Estado salvo somente neste navegador",
+  "Sem cobrança nesta versão",
 ];
 
 export function SubscribeModal({
@@ -29,35 +27,12 @@ export function SubscribeModal({
 
   async function subscribe() {
     setStep("processing");
-    setHint(null);
     const trimmed = email.trim();
-    const priceId = getPremiumPriceId();
-
-    const stripe = await startCheckout({
-      mode: "subscription",
-      priceId,
-      successPath: "/live/premium?subscribed=1",
-      cancelPath: "/live/premium?canceled=1",
-      customerEmail: trimmed || undefined,
-      metadata: { kind: "premium" },
-    });
-
-    if (stripe.ok) {
-      return;
-    }
-
-    if (stripe.demoFallback) {
-      setHint(
-        !priceId
-          ? "Sem NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID — demo local."
-          : "Stripe indisponível — concluindo em modo demo."
-      );
-      await new Promise((r) => setTimeout(r, 700));
-      if (!user && trimmed) signIn(trimmed);
-      subscribePremium();
-      setStep("done");
-      return;
-    }
+    setHint("Prévia local — nenhuma assinatura ou cobrança foi realizada.");
+    await new Promise((r) => setTimeout(r, 400));
+    if (!user && trimmed) signIn(trimmed);
+    subscribePremium();
+    setStep("done");
   }
 
   function close() {
@@ -73,7 +48,7 @@ export function SubscribeModal({
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-500">
-              Stripe Subscription · test / demo
+              Prévia Premium · sem cobrança
             </p>
             <h2 className="text-lg font-semibold">Treino Premium</h2>
           </div>
@@ -87,21 +62,21 @@ export function SubscribeModal({
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-fuchsia-100 text-fuchsia-600">
               <IconCheck className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-semibold">Assinatura ativa</h3>
+            <h3 className="text-xl font-semibold">Prévia ativada (demonstração)</h3>
             <p className="mt-2 text-sm text-neutral-500">
-              Bem-vindo ao Premium. Entre na live exclusiva agora.
+              O acesso foi atualizado apenas neste app de demonstração.
             </p>
             <button
               onClick={close}
               className="mt-6 w-full rounded-2xl bg-black py-3.5 text-sm font-semibold text-white"
             >
-              Ir para Premium Live
+              Continuar
             </button>
           </div>
         ) : (
           <>
             <div className="mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-pink-400 p-5 text-white">
-              <p className="text-sm text-white/80">Assinatura mensal</p>
+              <p className="text-sm text-white/80">Preço de referência · assinatura mensal</p>
               <p className="mt-1 text-3xl font-semibold tracking-tight">
                 {formatBRL(PREMIUM_PRICE_BRL)}
                 <span className="text-base font-normal text-white/80">
@@ -127,16 +102,6 @@ export function SubscribeModal({
                 placeholder="voce@email.com"
               />
             </label>
-            <label className="mt-3 block">
-              <span className="mb-1 block text-xs text-neutral-500">
-                Cartão (só no demo local)
-              </span>
-              <input
-                defaultValue="4242 4242 4242 4242"
-                className="w-full rounded-xl border border-neutral-200 px-3 py-2.5 font-mono text-sm outline-none focus:ring-2 focus:ring-fuchsia-400"
-              />
-            </label>
-
             {hint && (
               <p className="mt-3 text-center text-[11px] text-amber-600">{hint}</p>
             )}
@@ -147,11 +112,11 @@ export function SubscribeModal({
               className="mt-5 w-full rounded-2xl bg-fuchsia-600 py-3.5 text-sm font-semibold text-white disabled:opacity-60"
             >
               {step === "processing"
-                ? "Ativando…"
-                : `Assinar por ${formatBRL(PREMIUM_PRICE_BRL)}/${PREMIUM_PERIOD}`}
+                ? "Conectando…"
+                : "Ativar prévia local"}
             </button>
-            <p className="mt-3 text-center text-[11px] text-neutral-400">
-              Com Price id + secret → Checkout. Sem config → localStorage.
+            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-center text-xs leading-relaxed text-amber-950" role="note">
+              Nesta hospedagem estática, este botão só altera o estado demonstrativo salvo no navegador: não há checkout nem cobrança. Para vender uma assinatura, será necessário um backend com validação segura do pagamento.
             </p>
           </>
         )}

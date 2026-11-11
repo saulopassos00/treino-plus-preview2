@@ -81,16 +81,19 @@ export default function RecordedLivesPage() {
         <p className="mt-1 text-sm text-neutral-500">
           Replays para rever os treinos quando for melhor para você.
         </p>
+        <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
+          O selo e o bloqueio Premium são demonstrativos nesta versão estática; o controle real de acesso exige integração de assinatura e plataforma de vídeo.
+        </p>
       </header>
 
       <section className="relative mb-5 overflow-hidden rounded-[24px] bg-gradient-to-br from-rose-700 via-orange-600 to-amber-600 p-5 text-white shadow-lg shadow-orange-500/15">
         <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/15 blur-3xl" />
         <div className="relative z-10">
           <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide">
-            Ao vivo e sob demanda
+            Gravações sob demanda
           </span>
           <h2 className="mt-4 max-w-[17rem] text-2xl font-bold leading-tight tracking-tight">
-            Perdeu a transmissão? O treino continua.
+            Assista às gravações no seu ritmo.
           </h2>
           <p className="mt-2 max-w-[19rem] text-sm text-white/85">
             As gravações ficam reunidas aqui para você voltar quando quiser.
@@ -99,7 +102,7 @@ export default function RecordedLivesPage() {
             href="/live/free"
             className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 transition active:scale-[0.98]"
           >
-            <span>Ver próxima live</span>
+            <span>Ver prévia da sala</span>
             <IconChevron className="h-4 w-4" />
           </Link>
         </div>
@@ -324,6 +327,16 @@ export default function RecordedLivesPage() {
                 {selectedReplay.description}
               </p>
             ) : null}
+            <div className="px-4 pb-4 text-sm">
+              <a
+                href={selectedReplay.playbackUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-orange-700 underline underline-offset-2"
+              >
+                Problemas para assistir? Abrir na plataforma
+              </a>
+            </div>
           </div>
         </div>
       )}

@@ -31,7 +31,7 @@ export function PortalModal({
         <div className="mb-5 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">
-              Stripe Customer Portal · demo
+              Assinatura · simulação local
             </p>
             <h2 className="text-lg font-semibold">Gerenciar assinatura</h2>
           </div>
@@ -43,7 +43,7 @@ export function PortalModal({
         <div className="rounded-2xl border border-neutral-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Treino Premium</p>
+              <p className="font-medium">Treino Premium · demonstração</p>
               <p className="text-sm text-neutral-500">
                 {formatBRL(PREMIUM_PRICE_BRL)}/{PREMIUM_PERIOD}
               </p>
@@ -55,7 +55,7 @@ export function PortalModal({
                   : "bg-neutral-100 text-neutral-500"
               }`}
             >
-              {premiumSubscribed ? "Ativa" : "Inativa"}
+              {premiumSubscribed ? "Ativa · demo" : "Inativa · demo"}
             </span>
           </div>
           {premiumSubscribed && renewLabel && (
@@ -73,7 +73,7 @@ export function PortalModal({
             }}
             className="mt-5 w-full rounded-2xl border border-red-200 py-3.5 text-sm font-semibold text-red-600"
           >
-            Cancelar assinatura
+            Simular cancelamento
           </button>
         ) : (
           <button
@@ -83,11 +83,11 @@ export function PortalModal({
             }}
             className="mt-5 w-full rounded-2xl bg-black py-3.5 text-sm font-semibold text-white"
           >
-            Reativar Premium
+            Simular reativação
           </button>
         )}
         <p className="mt-3 text-center text-[11px] text-neutral-400">
-          Portal demo — sem cobrança real.
+          Apenas muda o estado local deste navegador. Nenhuma assinatura real é criada ou cancelada; sem cobrança.
         </p>
       </div>
     </div>

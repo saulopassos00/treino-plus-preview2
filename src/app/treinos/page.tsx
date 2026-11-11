@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { BODY_META, BODY_ORDER, BODY_WORKOUTS } from "@/lib/content";
 import { BodySilhouette, SilhouetteCollage } from "@/components/BodySilhouette";
+import { getProtocolProgress } from "@/lib/protocol-progress";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 
 export default function TreinosHubPage() {
-  const { protocolProgress, protocolStarted } = useDemoStore();
+  const store = useDemoStore();
+  const { protocolStarted } = store;
   const mounted = useHasMounted();
-  const interPct = mounted ? protocolProgress.inter : 0;
-  const advancedPct = mounted ? protocolProgress.avancado : 0;
+  const interPct = mounted ? getProtocolProgress(store, "inter") : 0;
+  const advancedPct = mounted ? getProtocolProgress(store, "avancado") : 0;
   const interInPlan = mounted && protocolStarted.inter;
   const advancedInPlan = mounted && protocolStarted.avancado;
 

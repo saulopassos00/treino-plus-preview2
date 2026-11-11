@@ -43,6 +43,9 @@ export default function AccountPage() {
           Perfil
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Conta</h1>
+        <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
+          Nesta versão de demonstração, login, compras e assinatura ficam apenas neste navegador. O selo “ativa” não confirma pagamento nem uma conta sincronizada.
+        </p>
       </header>
 
       {!user ? (
@@ -84,7 +87,7 @@ export default function AccountPage() {
             <div>
               <p className="font-semibold">Premium Live</p>
               <p className="text-sm text-neutral-500">
-                {formatBRL(PREMIUM_PRICE_BRL)}/mês
+                {formatBRL(PREMIUM_PRICE_BRL)}/mês · valor de referência
               </p>
             </div>
             <span
@@ -94,7 +97,7 @@ export default function AccountPage() {
                   : "bg-neutral-100 text-neutral-500"
               }`}
             >
-              {premiumSubscribed ? "Ativa" : "Inativa"}
+              {premiumSubscribed ? "Ativa · demo" : "Inativa"}
             </span>
           </div>
           {premiumSubscribed && renewLabel && (
@@ -123,7 +126,7 @@ export default function AccountPage() {
                 onClick={() => setSubscribe(true)}
                 className="w-full rounded-2xl bg-fuchsia-600 py-3 text-sm font-semibold text-white"
               >
-                Assinar Premium
+                Testar prévia Premium
               </button>
             )}
           </div>

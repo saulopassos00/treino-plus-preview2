@@ -1,0 +1,107 @@
+"use client";
+
+import Link from "next/link";
+import { useDemoStore, useHasMounted } from "@/lib/store";
+import { formatWeekRange, getWeekDays, toLocalDateKey, WEEK_ACTIVITIES } from "@/lib/week";
+
+export default function WeekPlanPage() {
+  const store = useDemoStore();
+  const mounted = useHasMounted();
+  const days = getWeekDays();
+  const dateKeys = days.map((day) => day.dateKey);
+  const entries = mounted ? store.weeklyRoutine : {};
+  const plannedDays = days.filter((day) => entries[day.dateKey]?.activityId).length;
+  const completedDays = days.filter((day) => entries[day.dateKey]?.activityId && entries[day.dateKey]?.completed).length;
+  const todayKey = dateKeys.includes(toLocalDateKey(new Date()))
+    ? toLocalDateKey(new Date())
+    : dateKeys[0];
+
+  return (
+    <main className="px-4 pb-8 pt-5">
+      <Link href="/" className="text-sm font-semibold text-[#007AFF]">← Início</Link>
+      <header className="mb-5 mt-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#007AFF]">Seu ritmo, suas escolhas</p>
+        <h1 className="mt-1 text-[32px] font-bold tracking-tight">Minha semana</h1>
+        <p className="mt-1 text-sm text-neutral-500">{formatWeekRange(days)} · monte um roteiro flexível com o que já existe no app.</p>
+      </header>
+
+      <section className="mb-5 rounded-3xl bg-gradient-to-br from-[#123C65] to-[#007AFF] p-5 text-white">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-white/75">Seu roteiro desta semana</p>
+            <p className="mt-1 text-3xl font-bold">{completedDays}<span className="text-lg font-medium text-white/70"> / {plannedDays || 7}</span></p>
+            <p className="mt-1 text-sm text-white/80">{plannedDays ? "dias concluídos entre os que você planejou" : "dias planejados — escolha uma atividade abaixo"}</p>
+          </div>
+          <div className="h-14 w-14 rounded-2xl border border-white/25 p-1.5" aria-hidden="true">
+            <svg viewBox="0 0 40 40" className="h-full w-full" fill="none">
+              <circle cx="20" cy="20" r="16" stroke="rgba(255,255,255,.28)" strokeWidth="4" />
+              <circle cx="20" cy="20" r="16" stroke="white" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${(completedDays / Math.max(1, plannedDays || 7)) * 100} 100`} pathLength="100" transform="rotate(-90 20 20)" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <div className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
+        Roteiro demonstrativo e flexível — não é prescrição de treino ou alimentação. Distribua as atividades conforme sua rotina e orientação profissional. Suas escolhas ficam salvas somente neste navegador.
+      </div>
+
+      <section className="space-y-3" aria-label="Dias da semana">
+        {days.map((day) => {
+          const entry = entries[day.dateKey] ?? { activityId: "", completed: false };
+          const activity = WEEK_ACTIVITIES.find((item) => item.id === entry.activityId);
+          const isToday = day.dateKey === todayKey;
+          return (
+            <article key={day.dateKey} className={`rounded-2xl bg-white p-4 shadow-sm ring-1 ${isToday ? "ring-[#007AFF]/40" : "ring-black/[0.05]"}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[15px] font-semibold capitalize">{day.dayLabel}{isToday ? <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase text-[#007AFF]">Hoje</span> : null}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500">{day.shortDate}</p>
+                </div>
+                {entry.completed ? <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Concluído</span> : null}
+              </div>
+
+              <label className="mt-3 block text-xs font-medium text-neutral-600" htmlFor={`activity-${day.dateKey}`}>Escolha o que combina com este dia</label>
+              <select
+                id={`activity-${day.dateKey}`}
+                value={entry.activityId}
+                onChange={(event) => store.updateWeeklyRoutineItem(day.dateKey, { activityId: event.target.value })}
+                disabled={!mounted}
+                className="mt-1.5 w-full rounded-xl border border-neutral-200 bg-white px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-[#007AFF] disabled:opacity-60"
+              >
+                <option value="">Sem atividade planejada</option>
+                {WEEK_ACTIVITIES.map((item) => <option key={item.id} value={item.id}>{item.label}{item.detail ? ` · ${item.detail}` : ""}</option>)}
+              </select>
+
+              {activity ? (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs text-neutral-500">{activity.detail}</p>
+                  {activity.href ? <Link href={activity.href} className="rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-[#007AFF]">Abrir atividade</Link> : null}
+                  <button
+                    type="button"
+                    onClick={() => store.updateWeeklyRoutineItem(day.dateKey, { completed: !entry.completed })}
+                    className={`rounded-full px-3 py-2 text-xs font-semibold ${entry.completed ? "bg-neutral-100 text-neutral-700" : "bg-emerald-600 text-white"}`}
+                  >
+                    {entry.completed ? "Desfazer conclusão" : activity.id === "rest" ? "Marcar descanso feito" : "Marcar como concluído"}
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-neutral-500">Deixe livre ou escolha uma atividade. Você pode mudar quando quiser.</p>
+              )}
+            </article>
+          );
+        })}
+      </section>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (window.confirm("Limpar as escolhas desta semana?")) store.clearWeeklyRoutine(dateKeys);
+        }}
+        disabled={!mounted || plannedDays === 0}
+        className="mt-4 w-full rounded-xl bg-neutral-100 py-3 text-sm font-semibold text-neutral-700 disabled:opacity-50"
+      >
+        Limpar esta semana
+      </button>
+    </main>
+  );
+}

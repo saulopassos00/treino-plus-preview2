@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Exercise, ProtocolLevel, WorkoutItem } from "@/types";
 import { useDemoStore, useHasMounted } from "@/lib/store";
+import { getProtocolProgress } from "@/lib/protocol-progress";
 
 const PROTOCOLS: {
   level: ProtocolLevel;
@@ -49,7 +50,9 @@ export default function MeuPlanoPage() {
   const {
     customExercises,
     customWorkouts,
-    protocolProgress,
+    protocolOverrides,
+    protocolCompletedExerciseIds,
+    protocolRemovedSessions,
     protocolStarted,
     toggleProtocolInPlan,
     createCustomExercise,
@@ -166,7 +169,10 @@ export default function MeuPlanoPage() {
           {PROTOCOLS.some((protocol) => protocolStarted[protocol.level]) ? (
             <ul className="space-y-2">
               {PROTOCOLS.filter((protocol) => protocolStarted[protocol.level]).map((protocol) => {
-                const progress = protocolProgress[protocol.level] || 0;
+                const progress = getProtocolProgress(
+                  { protocolOverrides, protocolCompletedExerciseIds, protocolRemovedSessions },
+                  protocol.level
+                );
                 return (
                   <li key={protocol.level} className="rounded-2xl border border-neutral-100 p-3">
                     <div className="flex items-center gap-3">

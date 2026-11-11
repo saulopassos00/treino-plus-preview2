@@ -2,29 +2,18 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { premiumLive, formatBRL, PREMIUM_PRICE_BRL } from "@/lib/data";
+import { premiumLive } from "@/lib/data";
 import { useDemoStore, useHasMounted } from "@/lib/store";
-import { LiveBadge } from "@/components/LiveBadge";
 import { SubscribeModal } from "@/components/SubscribeModal";
 import { IconLock, IconPlay } from "@/components/Icons";
 import { requestScreenWakeLock } from "@/lib/wakelock";
 
 function PremiumLiveInner() {
-  const { premiumSubscribed, subscribePremium } = useDemoStore();
+  const { premiumSubscribed } = useDemoStore();
   const mounted = useHasMounted();
-  const search = useSearchParams();
-  const router = useRouter();
   const [subscribe, setSubscribe] = useState(false);
   const [inRoom, setInRoom] = useState(false);
   const locked = mounted ? !premiumSubscribed : true;
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (search.get("subscribed") !== "1") return;
-    if (!premiumSubscribed) subscribePremium();
-    router.replace("/live/premium", { scroll: false });
-  }, [mounted, search, premiumSubscribed, subscribePremium, router]);
 
   useEffect(() => {
     if (inRoom && !locked) {
@@ -46,14 +35,12 @@ function PremiumLiveInner() {
             >
               Sair
             </button>
-            <LiveBadge label="PREMIUM" />
+            <span className="rounded-full bg-amber-300 px-2.5 py-1 text-[10px] font-bold text-neutral-950">PRÉVIA · DEMONSTRAÇÃO</span>
           </div>
           <div className="absolute bottom-6 left-4 right-4">
             <p className="text-xs text-white">{premiumLive.trainer}</p>
             <h1 className="text-2xl font-semibold">{premiumLive.title}</h1>
-            <p className="mt-2 text-sm text-white/90">
-              Sala exclusiva · {premiumLive.viewerCount} assinantes
-            </p>
+            <p className="mt-2 text-sm text-white/90">Experiência demonstrativa · sem transmissão real</p>
           </div>
         </div>
         <div className="flex-1 rounded-t-3xl bg-neutral-900 p-5">
@@ -79,7 +66,7 @@ function PremiumLiveInner() {
     <main className="px-4 pb-4 pt-6">
       <header className="mb-6">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">
-          Exclusivo
+          Prévia do produto
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">
           Premium Live
@@ -93,7 +80,7 @@ function PremiumLiveInner() {
         <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/15 blur-3xl" />
         <div className="relative z-10 drop-shadow">
           <div className="flex items-center gap-2">
-            <LiveBadge label="PREMIUM" />
+            <span className="rounded-full bg-amber-300 px-2.5 py-1 text-[10px] font-bold text-neutral-950">PRÉVIA · DEMONSTRAÇÃO</span>
             {locked && (
               <span className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur">
                 <IconLock className="h-3 w-3" /> Assinantes
@@ -104,7 +91,7 @@ function PremiumLiveInner() {
             {premiumLive.title}
           </h2>
           <p className="mt-2 text-sm font-medium text-white/95">{premiumLive.description}</p>
-          <p className="mt-3 text-xs font-semibold text-white">{premiumLive.startsAt}</p>
+          <p className="mt-3 text-xs font-semibold text-white">A transmissão Premium ainda não está conectada neste preview.</p>
 
           {locked ? (
             <button
@@ -112,7 +99,7 @@ function PremiumLiveInner() {
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-neutral-900"
             >
               <IconLock className="h-4 w-4" />
-              Desbloquear · {formatBRL(PREMIUM_PRICE_BRL)}/mês
+              Ativar prévia local
             </button>
           ) : (
             <button
@@ -126,20 +113,23 @@ function PremiumLiveInner() {
         </div>
       </div>
 
+      <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+        Esta sala, o acesso de assinante e o chat são demonstrativos. Uma assinatura salva no navegador não confirma pagamento nem concede acesso real a conteúdo protegido.
+      </p>
+
       <div className="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/[0.04]">
-        <h3 className="font-semibold">O que você ganha</h3>
+        <h3 className="font-semibold">O que falta para o Premium real</h3>
         <ul className="mt-3 space-y-2 text-sm text-neutral-600">
-          <li>• Lives avançadas com técnica detalhada</li>
-          <li>• Q&A ao vivo com o trainer</li>
-          <li>• Acesso prioritário a novos formatos</li>
-          <li>• Cancele quando quiser em Conta</li>
+          <li>• Conectar uma plataforma de transmissão ao vivo</li>
+          <li>• Definir e testar os conteúdos exclusivos</li>
+          <li>• Integrar autenticação e validação segura de pagamentos</li>
         </ul>
         {locked && (
           <button
             onClick={() => setSubscribe(true)}
             className="mt-5 w-full rounded-2xl bg-black py-3.5 text-sm font-semibold text-white"
           >
-            Assinar Premium
+            Testar Premium (demo)
           </button>
         )}
         {!locked && (
