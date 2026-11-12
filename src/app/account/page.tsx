@@ -8,6 +8,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { PortalModal } from "@/components/PortalModal";
 import { SubscribeModal } from "@/components/SubscribeModal";
 import { IconChevron } from "@/components/Icons";
+import { PushNotificationSettings } from "@/components/PushNotificationSettings";
 
 export default function AccountPage() {
   const {
@@ -77,6 +78,8 @@ export default function AccountPage() {
           </button>
         </div>
       )}
+
+      <PushNotificationSettings />
 
       <section className="mt-6">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
