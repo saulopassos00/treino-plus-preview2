@@ -152,6 +152,12 @@ export default function MeuPlanoPage() {
         </button>
       </section>
 
+      <Link href="/historico" className="mb-5 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-lg font-bold text-emerald-700" aria-hidden="true">↗</span>
+        <span className="min-w-0 flex-1"><strong className="block text-sm">Histórico, cargas e conquistas</strong><span className="mt-0.5 block text-xs text-neutral-500">Registre sessões e acompanhe sua evolução</span></span>
+        <span className="text-sm font-semibold text-[#007AFF]">Abrir →</span>
+      </Link>
+
       {mounted && (
         <section className="mb-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
           <div className="mb-3 flex items-end justify-between gap-3">

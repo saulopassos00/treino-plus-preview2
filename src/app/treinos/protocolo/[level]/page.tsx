@@ -22,6 +22,8 @@ function ExerciseRow({
   onRemove,
   onMove,
   onToggleDone,
+  loadKg,
+  onLoadChange,
 }: {
   exercise: ProtocolExercise;
   index: number;
@@ -31,6 +33,8 @@ function ExerciseRow({
   onRemove: () => void;
   onMove: (direction: -1 | 1) => void;
   onToggleDone: () => void;
+  loadKg: string;
+  onLoadChange: (value: string) => void;
 }) {
   const [name, setName] = useState(exercise.name);
   const [sets, setSets] = useState(exercise.sets?.toString() ?? "");
@@ -84,6 +88,9 @@ function ExerciseRow({
       <label className="mt-2 block pl-9 text-[10px] font-medium text-neutral-500">Observação (opcional)
         <input value={notes} onChange={(event) => setNotes(event.target.value)} onBlur={save} maxLength={120} placeholder="Anotação para este exercício" className={`${inputClass} mt-1 w-full`} />
       </label>
+      <label className="mt-2 block pl-9 text-[10px] font-medium text-neutral-500">Carga usada hoje (kg, opcional)
+        <input type="number" min="0" max="1000" step="0.5" inputMode="decimal" value={loadKg} onChange={(event) => onLoadChange(event.target.value)} placeholder="Deixe vazio se não usar peso" className={`${inputClass} mt-1 w-full`} />
+      </label>
     </li>
   );
 }
@@ -97,6 +104,7 @@ export default function ProtocoloPage() {
   const { toast } = useToast();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [drafts, setDrafts] = useState<Record<string, typeof EMPTY_DRAFT>>({});
+  const [loads, setLoads] = useState<Record<string, string>>({});
   const pct = mounted ? getProtocolProgress(store, level) : 0;
   const inMyPlan = mounted && store.protocolStarted[level];
   const allSessions = isInter ? PROTO_INTER_SESSIONS : PROTO_ADV_BLOCKS;
@@ -209,6 +217,8 @@ export default function ProtocoloPage() {
                           index={index}
                           total={items.length}
                           completed={doneIds.includes(exercise.id)}
+                          loadKg={loads[exercise.id] ?? ""}
+                          onLoadChange={(value) => setLoads((current) => ({ ...current, [exercise.id]: value }))}
                           onUpdate={(updates) => store.updateProtocolExercise(level, session.id, exercise.id, updates)}
                           onToggleDone={() => {
                             const completed = store.toggleProtocolExerciseCompleted(level, session.id, exercise.id);
@@ -230,6 +240,29 @@ export default function ProtocoloPage() {
                       <p className="mt-1 text-xs text-neutral-500">Adicione abaixo os movimentos reais da sua ficha. Você poderá editar, reordenar, concluir ou remover cada um separadamente.</p>
                     </div>
                   )}
+
+                  {items.length > 0 ? (
+                    <button
+                      type="button"
+                      disabled={doneIds.filter((id) => items.some((item) => item.id === id)).length === 0}
+                      onClick={() => {
+                        const completedItems = items.filter((item) => doneIds.includes(item.id));
+                        const id = store.logTrainingSession({
+                          title: `${session.title} · ${isInter ? "Protocolo intermediário" : "Protocolo avançado"}`,
+                          source: "protocol",
+                          exercises: completedItems.map((item) => ({
+                            id: item.id,
+                            name: item.name,
+                            sets: item.sets,
+                            reps: item.reps,
+                            loadKg: loads[item.id] ? Number(loads[item.id]) : undefined,
+                          })),
+                        });
+                        toast(id ? "Sessão salva no histórico e nas suas conquistas." : "Marque ao menos um exercício como concluído antes de salvar.");
+                      }}
+                      className="mt-3 w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500"
+                    >Registrar sessão concluída no histórico</button>
+                  ) : null}
 
                   <div className="mt-4 rounded-2xl bg-neutral-50 p-3">
                     <h4 className="text-sm font-semibold">＋ Adicionar exercício</h4>

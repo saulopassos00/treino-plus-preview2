@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 import { formatWeekRange, getWeekDays, toLocalDateKey, WEEK_ACTIVITIES } from "@/lib/week";
@@ -12,9 +13,27 @@ export default function WeekPlanPage() {
   const entries = mounted ? store.weeklyRoutine : {};
   const plannedDays = days.filter((day) => entries[day.dateKey]?.activityId).length;
   const completedDays = days.filter((day) => entries[day.dateKey]?.activityId && entries[day.dateKey]?.completed).length;
+  const [replanFrom, setReplanFrom] = useState<string | null>(null);
+  const [replanTarget, setReplanTarget] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
   const todayKey = dateKeys.includes(toLocalDateKey(new Date()))
     ? toLocalDateKey(new Date())
     : dateKeys[0];
+
+  async function enableReminder() {
+    if (!("Notification" in window)) {
+      setReminderMessage("Este navegador não oferece notificações locais.");
+      return;
+    }
+    const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+    if (permission === "granted") {
+      store.setWeeklyReminder(true);
+      setReminderMessage("Lembrete local ativado. O app precisa permanecer aberto neste navegador para verificar o horário.");
+    } else {
+      store.setWeeklyReminder(false);
+      setReminderMessage("Permissão não concedida. Você ainda pode consultar sua semana no app.");
+    }
+  }
 
   return (
     <main className="px-4 pb-8 pt-5">
@@ -44,6 +63,22 @@ export default function WeekPlanPage() {
       <div className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
         Roteiro demonstrativo e flexível — não é prescrição de treino ou alimentação. Distribua as atividades conforme sua rotina e orientação profissional. Suas escolhas ficam salvas somente neste navegador.
       </div>
+
+      <section className="mb-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+        <h2 className="text-sm font-bold">Lembrete neste dispositivo</h2>
+        <p className="mt-1 text-xs leading-relaxed text-neutral-500">Notificação do navegador no horário escolhido, somente enquanto o app estiver aberto. Não é um alarme garantido em segundo plano.</p>
+        <div className="mt-3 flex items-center gap-2">
+          <label className="min-w-0 flex-1 text-xs text-neutral-600">Horário
+            <input type="time" value={store.weeklyReminder.time} onChange={(event) => store.setWeeklyReminder(store.weeklyReminder.enabled, event.target.value)} disabled={!mounted} className="mt-1 block w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm" />
+          </label>
+          {store.weeklyReminder.enabled ? (
+            <button type="button" onClick={() => { store.setWeeklyReminder(false); setReminderMessage("Lembrete desativado."); }} className="mt-4 rounded-xl bg-neutral-100 px-3 py-2.5 text-xs font-semibold text-neutral-700">Desativar</button>
+          ) : (
+            <button type="button" disabled={!mounted} onClick={enableReminder} className="mt-4 rounded-xl bg-[#007AFF] px-3 py-2.5 text-xs font-semibold text-white disabled:opacity-50">Ativar lembrete</button>
+          )}
+        </div>
+        {reminderMessage && <p role="status" className="mt-2 text-xs text-neutral-600">{reminderMessage}</p>}
+      </section>
 
       <section className="space-y-3" aria-label="Dias da semana">
         {days.map((day) => {
@@ -83,10 +118,29 @@ export default function WeekPlanPage() {
                   >
                     {entry.completed ? "Desfazer conclusão" : activity.id === "rest" ? "Marcar descanso feito" : "Marcar como concluído"}
                   </button>
+                  {!entry.completed ? <button type="button" onClick={() => { setReplanFrom(replanFrom === day.dateKey ? null : day.dateKey); setReplanTarget(""); }} className="rounded-full bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">{replanFrom === day.dateKey ? "Cancelar replanejamento" : "Replanejar"}</button> : null}
                 </div>
               ) : (
                 <p className="mt-2 text-xs text-neutral-500">Deixe livre ou escolha uma atividade. Você pode mudar quando quiser.</p>
               )}
+
+              {replanFrom === day.dateKey && activity ? (
+                <div className="mt-3 rounded-xl bg-amber-50 p-3">
+                  <label className="block text-xs font-medium text-amber-950">Mover para um dia livre
+                    <select value={replanTarget} onChange={(event) => setReplanTarget(event.target.value)} className="mt-1 w-full rounded-lg border border-amber-200 bg-white px-3 py-2.5 text-sm text-neutral-900">
+                      <option value="">Escolha outro dia</option>
+                      {days.filter((target) => target.dateKey !== day.dateKey && !entries[target.dateKey]?.activityId).map((target) => <option key={target.dateKey} value={target.dateKey}>{target.dayLabel} · {target.shortDate}</option>)}
+                    </select>
+                  </label>
+                  <button type="button" disabled={!replanTarget} onClick={() => {
+                    const moved = store.moveWeeklyRoutineItem(day.dateKey, replanTarget);
+                    setReminderMessage(moved ? "Atividade movida. O dia de origem ficou livre." : "Não foi possível mover para esse dia.");
+                    setReplanFrom(null);
+                    setReplanTarget("");
+                  }} className="mt-2 w-full rounded-lg bg-amber-800 py-2.5 text-xs font-semibold text-white disabled:opacity-40">Confirmar novo dia</button>
+                  {days.filter((target) => target.dateKey !== day.dateKey && !entries[target.dateKey]?.activityId).length === 0 && <p className="mt-2 text-xs text-amber-900">Não há outro dia livre nesta semana. Libere um dia ou altere a semana manualmente.</p>}
+                </div>
+              ) : null}
             </article>
           );
         })}

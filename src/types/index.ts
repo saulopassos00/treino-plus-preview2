@@ -71,6 +71,29 @@ export interface WeeklyRoutineEntry {
   completed: boolean;
 }
 
+export interface WorkoutHistoryExercise {
+  id: string;
+  name: string;
+  sets?: number;
+  reps?: string;
+  loadKg?: number;
+  durationSec?: number;
+}
+
+export interface WorkoutHistoryEntry {
+  id: string;
+  title: string;
+  date: string;
+  source: "protocol" | "fast" | "custom" | "manual";
+  exercises: WorkoutHistoryExercise[];
+}
+
+export interface WeeklyReminderSettings {
+  enabled: boolean;
+  time: string;
+  lastSentDate: string | null;
+}
+
 /** Treino criado pelo usuário. exerciseId pode referenciar um exercício próprio ou de catálogo. */
 export interface CustomWorkout {
   id: string;
@@ -132,6 +155,10 @@ export interface DemoStore {
   protocolCompletedExerciseIds: Record<ProtocolLevel, Record<string, string[]>>;
   /** Roteiro semanal por data local YYYY-MM-DD; persistido somente neste navegador. */
   weeklyRoutine: Record<string, WeeklyRoutineEntry>;
+  /** Lembrete local; notificações só podem aparecer enquanto o app está aberto. */
+  weeklyReminder: WeeklyReminderSettings;
+  /** Sessões registradas para histórico e evolução local. */
+  workoutHistory: WorkoutHistoryEntry[];
   /** day keys like "5k:w1:d1" */
   corridaDone: string[];
   corridaActive: RunProgramId | null;

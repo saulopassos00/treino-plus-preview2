@@ -2,10 +2,12 @@
 
 import { BottomNav } from "./BottomNav";
 import { ToastProvider } from "./Toast";
+import { WeeklyReminderWatcher } from "./WeeklyReminderWatcher";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
+      <WeeklyReminderWatcher />
       <div className="min-h-dvh bg-[#F2F2F7] text-neutral-900 sm:bg-gradient-to-b sm:from-neutral-200 sm:via-neutral-100 sm:to-neutral-300 sm:py-6">
         <div className="mx-auto min-h-dvh max-w-[430px] bg-[#F2F2F7] pb-24 shadow-[0_0_80px_rgba(0,0,0,0.04)] sm:min-h-[850px] sm:rounded-[40px] sm:shadow-[0_24px_70px_rgba(0,0,0,0.16)] sm:ring-1 sm:ring-black/[0.08] sm:overflow-hidden relative">
           {/* Mockup do topo de tela no desktop */}

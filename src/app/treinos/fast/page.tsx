@@ -18,7 +18,7 @@ import { requestScreenWakeLock } from "@/lib/wakelock";
 type Phase = "idle" | "work" | "rest" | "done";
 
 export default function FastTrainerPage() {
-  const { completeFastWorkout } = useDemoStore();
+  const { completeFastWorkout, logTrainingSession } = useDemoStore();
   const { toast } = useToast();
   const [phase, setPhase] = useState<Phase>("idle");
   const [exIndex, setExIndex] = useState(0);
@@ -90,13 +90,22 @@ export default function FastTrainerPage() {
         }
         setPhase("done");
         completeFastWorkout();
+        logTrainingSession({
+          title: "Fast Trainer · Quicky",
+          source: "fast",
+          exercises: FAST_EXERCISES.map((exercise) => ({
+            id: `fast-${exercise.t.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+            name: exercise.t,
+            durationSec: exercise.workSec,
+          })),
+        });
         if (soundRef.current) playVictoryFanfare();
-        toast("Treino completo! Streak atualizado 🔥");
+        toast("Treino completo! Sessão salva no histórico.");
         return 0;
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [phase, completeFastWorkout, toast]);
+  }, [phase, completeFastWorkout, logTrainingSession, toast]);
 
   function start() {
     setRound(1);

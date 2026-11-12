@@ -126,6 +126,11 @@ export default function HomePage() {
             <span className="min-w-0 flex-1"><strong className="block text-sm">Meu plano</strong><span className="mt-0.5 block text-xs text-neutral-500">Crie treinos e personalize exercícios</span></span>
             <IconChevron className="h-4 w-4 text-neutral-300" />
           </Link>
+          <Link href="/historico" className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-xl font-bold text-emerald-700" aria-hidden="true">↗</span>
+            <span className="min-w-0 flex-1"><strong className="block text-sm">Histórico e evolução</strong><span className="mt-0.5 block text-xs text-neutral-500">Registre cargas, acompanhe marcas e desafios</span></span>
+            <IconChevron className="h-4 w-4 text-neutral-300" />
+          </Link>
           <Link href="/ebook" className="flex overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.04]">
             <div className="flex w-24 shrink-0 items-center justify-center" style={{ background: "linear-gradient(165deg,#1A3A2A,#52B788)" }}><BookMark className="h-14 w-11" /></div>
             <div className="flex-1 p-4"><span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Guia</span><strong className="mt-1 block text-[15px]">Ebook de nutrição</strong><p className="mt-1 text-xs text-neutral-500">Guia prático · {chapters}/7 capítulos lidos</p></div>

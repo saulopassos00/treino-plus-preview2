@@ -11,6 +11,7 @@ import type {
   RunProgramId,
   User,
   WeeklyRoutineEntry,
+  WorkoutHistoryEntry,
   WorkoutItem,
 } from "@/types";
 
@@ -28,6 +29,8 @@ const defaultStore: DemoStore = {
   protocolOverrides: { inter: {}, avancado: {} },
   protocolCompletedExerciseIds: { inter: {}, avancado: {} },
   weeklyRoutine: {},
+  weeklyReminder: { enabled: false, time: "18:00", lastSentDate: null },
+  workoutHistory: [],
   corridaDone: [],
   corridaActive: null,
   ebookChaptersRead: [],
@@ -116,6 +119,21 @@ function migrate(raw: Partial<DemoStore>): DemoStore {
       avancado: normalizeCompletedIds(completed?.avancado),
     },
     weeklyRoutine: normalizeWeeklyRoutine(raw.weeklyRoutine),
+    weeklyReminder: {
+      enabled: raw.weeklyReminder?.enabled === true,
+      time: typeof raw.weeklyReminder?.time === "string" && /^\d{2}:\d{2}$/.test(raw.weeklyReminder.time)
+        ? raw.weeklyReminder.time
+        : defaultStore.weeklyReminder.time,
+      lastSentDate: typeof raw.weeklyReminder?.lastSentDate === "string"
+        ? raw.weeklyReminder.lastSentDate
+        : null,
+    },
+    workoutHistory: Array.isArray(raw.workoutHistory)
+      ? raw.workoutHistory.filter((entry): entry is WorkoutHistoryEntry =>
+          !!entry && typeof entry.id === "string" && typeof entry.title === "string" &&
+          typeof entry.date === "string" && Array.isArray(entry.exercises)
+        )
+      : [],
     ownedWorkoutIds: Array.isArray(raw.ownedWorkoutIds) ? raw.ownedWorkoutIds : [],
     ownedShopIds: Array.isArray(raw.ownedShopIds) ? raw.ownedShopIds : [],
     corridaDone: Array.isArray(raw.corridaDone) ? raw.corridaDone : [],
@@ -484,6 +502,60 @@ export function useDemoStore() {
     });
   }, []);
 
+  const moveWeeklyRoutineItem = useCallback((fromDate: string, toDate: string): boolean => {
+    if (![fromDate, toDate].every((key) => /^\d{4}-\d{2}-\d{2}$/.test(key)) || fromDate === toDate) return false;
+    const cur = getSnapshot();
+    const source = cur.weeklyRoutine[fromDate];
+    if (!source?.activityId || cur.weeklyRoutine[toDate]?.activityId) return false;
+    writeStore({
+      ...cur,
+      weeklyRoutine: {
+        ...cur.weeklyRoutine,
+        [fromDate]: { activityId: "", completed: false },
+        [toDate]: { activityId: source.activityId, completed: false },
+      },
+    });
+    return true;
+  }, []);
+
+  const setWeeklyReminder = useCallback((enabled: boolean, time?: string) => {
+    const cur = getSnapshot();
+    writeStore({
+      ...cur,
+      weeklyReminder: {
+        ...cur.weeklyReminder,
+        enabled,
+        time: time && /^\d{2}:\d{2}$/.test(time) ? time : cur.weeklyReminder.time,
+      },
+    });
+  }, []);
+
+  const markWeeklyReminderSent = useCallback((date: string) => {
+    const cur = getSnapshot();
+    if (cur.weeklyReminder.lastSentDate === date) return;
+    writeStore({ ...cur, weeklyReminder: { ...cur.weeklyReminder, lastSentDate: date } });
+  }, []);
+
+  const logTrainingSession = useCallback((input: Omit<WorkoutHistoryEntry, "id" | "date"> & { date?: string }): string | null => {
+    const title = input.title.trim();
+    if (!title || !input.exercises.length) return null;
+    const entry: WorkoutHistoryEntry = {
+      id: createId("session"),
+      title,
+      date: input.date ?? new Date().toISOString(),
+      source: input.source,
+      exercises: input.exercises.map((exercise) => ({
+        ...exercise,
+        id: exercise.id || createId("history-exercise"),
+        name: exercise.name.trim(),
+      })).filter((exercise) => exercise.name),
+    };
+    if (!entry.exercises.length) return null;
+    const cur = getSnapshot();
+    writeStore({ ...cur, workoutHistory: [entry, ...cur.workoutHistory], ...bumpStreak(cur) });
+    return entry.id;
+  }, []);
+
   const toggleCorridaDay = useCallback((key: string) => {
     const cur = getSnapshot();
     const has = cur.corridaDone.includes(key);
@@ -773,6 +845,10 @@ export function useDemoStore() {
     toggleProtocolExerciseCompleted,
     updateWeeklyRoutineItem,
     clearWeeklyRoutine,
+    moveWeeklyRoutineItem,
+    setWeeklyReminder,
+    markWeeklyReminderSent,
+    logTrainingSession,
     toggleProtocolInPlan,
     toggleCorridaDay,
     activateCorrida,
