@@ -39,6 +39,7 @@ const defaultStore: DemoStore = {
   adaptationsSaved: [],
   customExercises: [],
   customWorkouts: [],
+  selectedExerciseIds: [],
   savedPlanIds: [],
 };
 
@@ -146,6 +147,9 @@ function migrate(raw: Partial<DemoStore>): DemoStore {
           items: Array.isArray(workout.items) ? workout.items : [],
           scheduledDays: Array.isArray(workout.scheduledDays) ? workout.scheduledDays : [],
         }))
+      : [],
+    selectedExerciseIds: Array.isArray(raw.selectedExerciseIds)
+      ? Array.from(new Set(raw.selectedExerciseIds.filter((id): id is string => typeof id === "string" && id.length <= 80)))
       : [],
     savedPlanIds: Array.isArray(raw.savedPlanIds) ? raw.savedPlanIds : [],
   };
@@ -812,6 +816,22 @@ export function useDemoStore() {
     return !saved;
   }, []);
 
+  const selectExercise = useCallback((exerciseId: string): boolean => {
+    const id = exerciseId.trim();
+    if (!id || id.length > 80) return false;
+    const cur = getSnapshot();
+    if (cur.selectedExerciseIds.includes(id)) return false;
+    writeStore({ ...cur, selectedExerciseIds: [...cur.selectedExerciseIds, id] });
+    return true;
+  }, []);
+
+  const deselectExercise = useCallback((exerciseId: string): boolean => {
+    const cur = getSnapshot();
+    if (!cur.selectedExerciseIds.includes(exerciseId)) return false;
+    writeStore({ ...cur, selectedExerciseIds: cur.selectedExerciseIds.filter((id) => id !== exerciseId) });
+    return true;
+  }, []);
+
   const resetDemo = useCallback(() => {
     writeStore(defaultStore);
   }, []);
@@ -866,6 +886,8 @@ export function useDemoStore() {
     removeWorkoutItem,
     reorderWorkoutItems,
     toggleSavedPlan,
+    selectExercise,
+    deselectExercise,
     resetDemo,
     owns,
     ownsShop,

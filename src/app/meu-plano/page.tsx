@@ -5,6 +5,8 @@ import Link from "next/link";
 import type { Exercise, ProtocolLevel, WorkoutItem } from "@/types";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 import { getProtocolProgress } from "@/lib/protocol-progress";
+import { EXERCISE_CATALOG } from "@/lib/exercise-catalog";
+import { SelectedExercisesSummary } from "@/components/SelectedExercisesSummary";
 
 const PROTOCOLS: {
   level: ProtocolLevel;
@@ -32,18 +34,8 @@ const PROTOCOLS: {
   },
 ];
 
-const CATALOG: Exercise[] = [
-  { id: "catalog-agachamento", name: "Agachamento", muscleGroup: "Pernas e glúteos", equipment: "Peso corporal ou barra", level: "Iniciante", isCustom: false, createdAt: "", updatedAt: "" },
-  { id: "catalog-flexao", name: "Flexão de braço", muscleGroup: "Peito e tríceps", equipment: "Peso corporal", level: "Iniciante", createdAt: "", updatedAt: "", isCustom: false },
-  { id: "catalog-remada", name: "Remada unilateral", muscleGroup: "Costas e bíceps", equipment: "Halter", level: "Intermediário", createdAt: "", updatedAt: "", isCustom: false },
-  { id: "catalog-ponte", name: "Ponte de glúteos", muscleGroup: "Glúteos", equipment: "Peso corporal", level: "Iniciante", createdAt: "", updatedAt: "", isCustom: false },
-  { id: "catalog-prancha", name: "Prancha", muscleGroup: "Core", equipment: "Peso corporal", level: "Iniciante", createdAt: "", updatedAt: "", isCustom: false },
-  { id: "catalog-desenvolvimento", name: "Desenvolvimento de ombros", muscleGroup: "Ombros", equipment: "Halteres", level: "Intermediário", createdAt: "", updatedAt: "", isCustom: false },
-  { id: "catalog-mobilidade-quadril", name: "Mobilidade de quadril", muscleGroup: "Mobilidade", equipment: "Sem equipamento", level: "Iniciante", createdAt: "", updatedAt: "", isCustom: false },
-];
-
 function exerciseForId(id: string, customExercises: Exercise[]): Exercise | undefined {
-  return customExercises.find((exercise) => exercise.id === id) ?? CATALOG.find((exercise) => exercise.id === id);
+  return customExercises.find((exercise) => exercise.id === id) ?? EXERCISE_CATALOG.find((exercise) => exercise.id === id);
 }
 
 export default function MeuPlanoPage() {
@@ -76,7 +68,7 @@ export default function MeuPlanoPage() {
   const [exerciseLevel, setExerciseLevel] = useState<Exercise["level"]>("Iniciante");
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
   const [exerciseSearch, setExerciseSearch] = useState<Record<string, string>>({});
-  const allExercises = useMemo(() => [...CATALOG, ...customExercises], [customExercises]);
+  const allExercises = useMemo(() => [...EXERCISE_CATALOG, ...customExercises], [customExercises]);
 
   function handleCreateWorkout(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -246,6 +238,8 @@ export default function MeuPlanoPage() {
           <button className="w-full rounded-xl bg-[#007AFF] py-3 font-semibold text-white">Criar treino</button>
         </form>
       )}
+
+      {mounted && <SelectedExercisesSummary />}
 
       <section className="mb-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
         <div className="mb-3">

@@ -170,6 +170,8 @@ export interface DemoStore {
   customExercises: Exercise[];
   /** Treinos criados pelo usuário, com exercícios e parâmetros ordenados. */
   customWorkouts: CustomWorkout[];
+  /** IDs estáveis do catálogo no modo demo/local; não inclui seleções da conta Supabase. */
+  selectedExerciseIds: string[];
   /** IDs de treinos prontos adicionados ao plano pessoal. */
   savedPlanIds: string[];
 }

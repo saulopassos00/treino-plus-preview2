@@ -45,7 +45,7 @@ export default function AccountPage() {
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Conta</h1>
         <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="note">
-          Nesta versão de demonstração, login, compras e assinatura ficam apenas neste navegador. O selo “ativa” não confirma pagamento nem uma conta sincronizada.
+          Compras e assinatura continuam demonstrativas e locais. A área “Notificações push” usa uma sessão Supabase real, quando configurada, apenas para associar e persistir inscrições e lembretes.
         </p>
       </header>
 

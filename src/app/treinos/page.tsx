@@ -5,6 +5,7 @@ import { BODY_META, BODY_ORDER, BODY_WORKOUTS } from "@/lib/content";
 import { BodySilhouette, SilhouetteCollage } from "@/components/BodySilhouette";
 import { getProtocolProgress } from "@/lib/protocol-progress";
 import { useDemoStore, useHasMounted } from "@/lib/store";
+import { ExerciseLibrary } from "@/components/ExerciseLibrary";
 
 export default function TreinosHubPage() {
   const store = useDemoStore();
@@ -139,6 +140,8 @@ export default function TreinosHubPage() {
           <p className="mt-1 text-xs text-neutral-500">Sessões completas A · B · Express</p>
         </div>
       </Link>
+
+      <ExerciseLibrary />
 
       <p className="px-5 pb-3 pt-4 text-xl font-bold">Grupos musculares</p>
       <div className="mx-4 grid grid-cols-3 gap-2.5">

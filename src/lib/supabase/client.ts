@@ -1,18 +1,24 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-/**
- * Browser Supabase client (anon key).
- * Wire into auth UI after enabling Email magic link in the Supabase project.
- * Returns null when env vars are missing so the UI can show a graceful message.
- */
+let cachedClient: SupabaseClient | null | undefined;
+
+/** Browser-only client for the public key; RLS and Auth enforce access. */
 export function createBrowserClient(): SupabaseClient | null {
+  if (cachedClient !== undefined) return cachedClient;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
   if (!url || !anonKey) {
-    console.warn(
-      "[supabase/client] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing"
-    );
-    return null;
+    cachedClient = null;
+    return cachedClient;
   }
-  return createClient(url, anonKey);
+
+  cachedClient = createClient(url, anonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+  return cachedClient;
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useDemoStore, useHasMounted } from "@/lib/store";
 import { formatWeekRange, getWeekDays, toLocalDateKey, WEEK_ACTIVITIES } from "@/lib/week";
+import { createBrowserClient } from "@/lib/supabase/client";
 
 export default function WeekPlanPage() {
   const store = useDemoStore();
@@ -16,9 +18,54 @@ export default function WeekPlanPage() {
   const [replanFrom, setReplanFrom] = useState<string | null>(null);
   const [replanTarget, setReplanTarget] = useState("");
   const [reminderMessage, setReminderMessage] = useState("");
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const todayKey = dateKeys.includes(toLocalDateKey(new Date()))
     ? toLocalDateKey(new Date())
     : dateKeys[0];
+
+  const timeZone = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo" : "America/Sao_Paulo";
+  const scheduledEntries = mounted && store.weeklyReminder.enabled ? days.flatMap((day) => {
+    const entry = store.weeklyRoutine[day.dateKey];
+    if (!entry?.activityId || entry.completed) return [];
+    const [year, month, date] = day.dateKey.split("-").map(Number);
+    const [hour, minute] = store.weeklyReminder.time.split(":").map(Number);
+    const localTime = new Date(year, month - 1, date, hour, minute, 0, 0);
+    if (!Number.isFinite(localTime.getTime()) || localTime.getTime() <= Date.now()) return [];
+    return [{ dateKey: day.dateKey, activityId: entry.activityId, scheduledAt: localTime.toISOString() }];
+  }) : [];
+  const scheduleSignature = JSON.stringify({ enabled: mounted && store.weeklyReminder.enabled, timeZone, entries: scheduledEntries });
+
+  useEffect(() => {
+    const client = createBrowserClient();
+    setSupabase(client);
+    if (!client) return;
+    let active = true;
+    void client.auth.getSession().then(({ data }) => {
+      if (active) setSupabaseUserId(data.session?.user.id ?? null);
+    });
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUserId(session?.user.id ?? null);
+    });
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !supabase || !supabaseUserId) return;
+    let active = true;
+    const schedule = JSON.parse(scheduleSignature) as { enabled: boolean; timeZone: string; entries: { dateKey: string; activityId: string; scheduledAt: string }[] };
+    void supabase.functions.invoke("sync-weekly-reminders", { body: schedule }).then(({ error }) => {
+      if (active && error && schedule.enabled) {
+        setReminderMessage(`O lembrete local continua disponível, mas o agendamento push não foi sincronizado: ${error.message}`);
+      }
+    }).catch(() => {
+      if (active && schedule.enabled) setReminderMessage("O lembrete local continua disponível, mas não foi possível sincronizar o push com o servidor.");
+    });
+    return () => { active = false; };
+  }, [mounted, supabase, supabaseUserId, scheduleSignature]);
 
   async function enableReminder() {
     if (!("Notification" in window)) {
@@ -28,7 +75,7 @@ export default function WeekPlanPage() {
     const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
     if (permission === "granted") {
       store.setWeeklyReminder(true);
-      setReminderMessage("Lembrete local ativado. O app precisa permanecer aberto neste navegador para verificar o horário.");
+        setReminderMessage("Lembrete local ativado. Para receber push com o app fechado, entre no Supabase Auth e ative Web Push no Perfil.");
     } else {
       store.setWeeklyReminder(false);
       setReminderMessage("Permissão não concedida. Você ainda pode consultar sua semana no app.");
@@ -61,12 +108,12 @@ export default function WeekPlanPage() {
       </section>
 
       <div className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
-        Roteiro demonstrativo e flexível — não é prescrição de treino ou alimentação. Distribua as atividades conforme sua rotina e orientação profissional. Suas escolhas ficam salvas somente neste navegador.
+        Roteiro demonstrativo e flexível — não é prescrição de treino ou alimentação. Suas escolhas completas continuam neste navegador; se você entrar e ativar Web Push no Perfil, apenas os horários futuros de lembrete são sincronizados com o Supabase.
       </div>
 
       <section className="mb-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
         <h2 className="text-sm font-bold">Lembrete neste dispositivo</h2>
-        <p className="mt-1 text-xs leading-relaxed text-neutral-500">Notificação do navegador no horário escolhido, somente enquanto o app estiver aberto. Não é um alarme garantido em segundo plano.</p>
+        <p className="mt-1 text-xs leading-relaxed text-neutral-500">Com a página aberta, o app pode mostrar um lembrete local. Com Supabase Auth e Web Push ativos no Perfil, atividades futuras não concluídas também são agendadas no servidor. A entrega continua dependendo do navegador e não é um alarme garantido.</p>
         <div className="mt-3 flex items-center gap-2">
           <label className="min-w-0 flex-1 text-xs text-neutral-600">Horário
             <input type="time" value={store.weeklyReminder.time} onChange={(event) => store.setWeeklyReminder(store.weeklyReminder.enabled, event.target.value)} disabled={!mounted} className="mt-1 block w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm" />
