@@ -241,9 +241,9 @@ export default function MeuPlanoPage() {
 
       {mounted && <SelectedExercisesSummary />}
 
-      <section className="mb-6 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]">
+      <section id="custom-exercises" className="mb-6 scroll-mt-24 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04]" aria-labelledby="my-custom-exercises-title">
         <div className="mb-3">
-          <h2 className="font-semibold">Seus exercícios</h2>
+          <h2 id="my-custom-exercises-title" className="font-semibold">Seus exercícios</h2>
           <p className="mt-0.5 text-xs text-neutral-500">Cadastre movimentos que não encontrou na biblioteca.</p>
         </div>
         <form onSubmit={handleSaveExercise} className="space-y-2.5">

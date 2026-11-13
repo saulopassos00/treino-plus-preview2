@@ -19,7 +19,10 @@ Manter o Treino Plus como export estático servido por GitHub Pages e usar Supab
 
 O repositório usa static export, então não haverá API Route Next.js em runtime. O projeto Supabase remoto precisa estar conectado e configurado antes do serviço operar. O envio real requer `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, URL do projeto e segredo interno do Supabase armazenados somente no backend/Vault. O cron trabalha em UTC e a data local é convertida pelo frontend considerando o fuso IANA. A entrega push é best-effort do navegador/plataforma.
 
-
 ## Extensão — Biblioteca de exercícios
 
 Na rota existente `/treinos`, acrescentar um componente de biblioteca com grupos musculares expansíveis, busca por nome/grupo/equipamento e filtro por equipamento. O catálogo terá IDs estáveis em `src/lib/exercise-catalog.ts`, compartilhados com `Meu Plano` para não duplicar ou quebrar as referências locais existentes. O botão “Adicionar ao meu treino” registra seleção no store local da demonstração e, quando há Supabase Auth, faz upsert na tabela `public.user_selected_exercises`; sem backend/autenticação, a UI identifica que o salvamento é local. A migration cria tabela com snapshot e parâmetros (séries, reps, descanso), chave única por usuário/exercício, RLS e policies `auth.uid() = user_id`. A integração remota depende de aplicar a migration no projeto Supabase; nenhuma chave privada é usada no frontend.
+
+## Extensão — cadastro de exercícios customizados
+
+Na biblioteca de `/treinos`, oferecer criação inline de exercícios personalizados com nome, grupo muscular, equipamento opcional e nível, reaproveitando `createCustomExercise` e o store atual. O exercício criado entra nos resultados da biblioteca e pode ser usado para montar sessões em Meu Plano; a gestão de edição e exclusão permanece na seção existente “Seus exercícios”, acessível por link direto com âncora. Até existir tabela remota própria para exercícios customizados, a interface informa que esses itens ficam no armazenamento local do navegador/demo.
